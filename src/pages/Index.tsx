@@ -4,9 +4,17 @@ import { useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform, useInView } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/auth-context';
-import CursorGradient from '@/components/cursor-gradient';
+import { EnhancedCursorGradient } from '@/components/enhanced-cursor-gradient';
 import { Logo } from '@/components/logo';
 import { ChevronRight, ArrowRight, CheckCircle2, TrendingUp, Calendar, Target } from 'lucide-react';
+import { 
+  fadeInUp, 
+  fadeIn, 
+  scaleIn, 
+  createStaggerContainer, 
+  itemAnimation, 
+  gradientMovement 
+} from '@/lib/utils';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -24,6 +32,8 @@ const HomePage = () => {
   
   const opacityHero = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
   const yHero = useTransform(scrollYProgress, [0, 0.2], [0, 50]);
+  const heroRotate = useTransform(scrollYProgress, [0, 0.1], [0, -2]);
+  const heroScale = useTransform(scrollYProgress, [0, 0.1], [1, 0.95]);
   
   useEffect(() => {
     if (user) {
@@ -33,18 +43,35 @@ const HomePage = () => {
   
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <CursorGradient className="min-h-screen flex items-center pt-16" intensity="high">
+      {/* Hero Section with enhanced animation */}
+      <EnhancedCursorGradient 
+        className="min-h-screen flex items-center pt-16" 
+        intensity="high"
+        particleCount={40}
+      >
         <div ref={heroRef} className="container px-4 mx-auto">
           <motion.div 
             className="max-w-4xl mx-auto text-center"
-            style={{ opacity: opacityHero, y: yHero }}
+            style={{ 
+              opacity: opacityHero, 
+              y: yHero,
+              rotateX: heroRotate,
+              scale: heroScale,
+            }}
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ 
+                duration: 0.8, 
+                ease: [0.22, 1, 0.36, 1],
+                delay: 0.2 
+              }}
               className="mx-auto mb-8"
+              whileHover={{ 
+                rotate: [0, -5, 5, 0], 
+                transition: { duration: 0.5 }
+              }}
             >
               <Logo variant="large" showText={false} />
             </motion.div>
@@ -57,7 +84,17 @@ const HomePage = () => {
             >
               Build lasting habits with
               <br />
-              <span className="text-gradient">visual streak tracking</span>
+              <motion.span 
+                className="text-gradient" 
+                style={{
+                  backgroundSize: '200% 200%',
+                }}
+                variants={gradientMovement}
+                initial="initial"
+                animate="animate"
+              >
+                visual streak tracking
+              </motion.span>
             </motion.h1>
             
             <motion.p 
@@ -103,7 +140,7 @@ const HomePage = () => {
               >
                 <Button 
                   variant="outline"
-                  className="rounded-full h-12 px-6 text-base"
+                  className="rounded-full h-12 px-6 text-base btn-pulse"
                   onClick={() => navigate('/login')}
                 >
                   Sign In
@@ -118,35 +155,74 @@ const HomePage = () => {
               transition={{ duration: 0.8, delay: 0.6 }}
               whileHover={{ 
                 y: -5,
+                boxShadow: "0 30px 60px rgba(0,0,0,0.12)",
                 transition: { duration: 0.2 }
               }}
             >
               <div className="relative mx-auto max-w-3xl rounded-2xl shadow-xl overflow-hidden border border-border/30">
                 <div className="bg-black/5 dark:bg-white/5 h-8 flex items-center px-4 border-b border-border/30">
                   <div className="flex space-x-2">
-                    <div className="size-3 rounded-full bg-red-400" />
-                    <div className="size-3 rounded-full bg-yellow-400" />
-                    <div className="size-3 rounded-full bg-green-400" />
+                    <motion.div 
+                      className="size-3 rounded-full bg-red-400"
+                      whileHover={{ scale: 1.2 }}
+                    />
+                    <motion.div 
+                      className="size-3 rounded-full bg-yellow-400"
+                      whileHover={{ scale: 1.2 }}
+                    />
+                    <motion.div 
+                      className="size-3 rounded-full bg-green-400"
+                      whileHover={{ scale: 1.2 }}
+                    />
                   </div>
                 </div>
                 <div className="aspect-video bg-muted/30 flex justify-center items-center">
-                  <div className="text-center p-6">
-                    <div className="size-16 bg-habit-purple/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <motion.div 
+                    className="text-center p-6"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.8 }}
+                  >
+                    <motion.div 
+                      className="size-16 bg-habit-purple/20 rounded-full flex items-center justify-center mx-auto mb-4"
+                      animate={{ 
+                        boxShadow: [
+                          "0 0 0 rgba(108, 93, 211, 0)",
+                          "0 0 20px rgba(108, 93, 211, 0.5)",
+                          "0 0 0 rgba(108, 93, 211, 0)"
+                        ]
+                      }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    >
                       <Calendar className="size-8 text-habit-purple" />
-                    </div>
+                    </motion.div>
                     <p className="text-lg font-medium">HabitVault Dashboard Preview</p>
                     <p className="text-sm text-foreground/60 mt-1">Sign up to start tracking your habits</p>
-                  </div>
+                  </motion.div>
                 </div>
               </div>
               
-              {/* Decorative elements */}
-              <div className="absolute -z-10 size-64 rounded-full bg-habit-purple/10 blur-3xl -top-10 -left-10" />
-              <div className="absolute -z-10 size-64 rounded-full bg-habit-teal/10 blur-3xl -bottom-10 -right-10" />
+              {/* Decorative elements with subtle animations */}
+              <motion.div 
+                className="absolute -z-10 size-64 rounded-full bg-habit-purple/10 blur-3xl -top-10 -left-10"
+                animate={{ 
+                  scale: [1, 1.2, 1],
+                  opacity: [0.6, 0.8, 0.6],
+                }}
+                transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+              />
+              <motion.div 
+                className="absolute -z-10 size-64 rounded-full bg-habit-teal/10 blur-3xl -bottom-10 -right-10"
+                animate={{ 
+                  scale: [1, 1.3, 1],
+                  opacity: [0.6, 0.9, 0.6],
+                }}
+                transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+              />
             </motion.div>
           </motion.div>
         </div>
-      </CursorGradient>
+      </EnhancedCursorGradient>
 
       {/* Features Section */}
       <section ref={featuresRef} className="py-24 bg-muted/30">
@@ -196,7 +272,12 @@ const HomePage = () => {
                 HabitVault provides detailed analytics to help you understand your habit patterns
                 and optimize your daily routine for maximum effectiveness.
               </p>
-              <ul className="space-y-4">
+              <motion.ul 
+                className="space-y-4"
+                variants={createStaggerContainer()}
+                initial="hidden"
+                animate={statsInView ? "show" : "hidden"}
+              >
                 {[
                   "Track daily, weekly, and monthly progress",
                   "Visualize habit streaks and consistency",
@@ -206,15 +287,13 @@ const HomePage = () => {
                   <motion.li 
                     key={i}
                     className="flex items-start"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: statsInView ? 1 : 0, x: statsInView ? 0 : -20 }}
-                    transition={{ duration: 0.4, delay: 0.2 + i * 0.1 }}
+                    variants={itemAnimation}
                   >
                     <CheckCircle2 className="mr-3 size-5 text-habit-teal flex-shrink-0 mt-0.5" />
                     <span>{item}</span>
                   </motion.li>
                 ))}
-              </ul>
+              </motion.ul>
               <div className="mt-8">
                 <motion.div
                   whileHover={{ scale: 1.05 }}
@@ -236,10 +315,10 @@ const HomePage = () => {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: statsInView ? 1 : 0, scale: statsInView ? 1 : 0.9 }}
               transition={{ duration: 0.6, delay: 0.2 }}
+              whileHover={{ y: -8, transition: { duration: 0.3 } }}
             >
               <motion.div 
-                className="bg-card rounded-xl border border-border/40 p-6 shadow-lg"
-                whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                className="bg-card rounded-xl border border-border/40 p-6 shadow-lg bg-gradient-card"
               >
                 <h3 className="text-xl font-semibold mb-4 flex items-center">
                   <TrendingUp className="mr-2 size-5 text-habit-teal" />
@@ -263,71 +342,109 @@ const HomePage = () => {
                     </div>
                   ))}
                 </div>
-                <div className="grid grid-cols-3 gap-4 pt-4 border-t border-border">
+                <motion.div 
+                  className="grid grid-cols-3 gap-4 pt-4 border-t border-border"
+                  variants={createStaggerContainer(0.1, 0.8)}
+                  initial="hidden"
+                  animate={statsInView ? "show" : "hidden"}
+                >
                   {[
                     { label: "Streak", value: "16 days" },
                     { label: "Completion", value: "92%" },
                     { label: "Habits", value: "8 active" }
                   ].map((stat) => (
-                    <div key={stat.label} className="text-center">
+                    <motion.div 
+                      key={stat.label} 
+                      className="text-center"
+                      variants={itemAnimation}
+                    >
                       <p className="text-foreground/60 text-sm">{stat.label}</p>
                       <p className="font-semibold">{stat.value}</p>
-                    </div>
+                    </motion.div>
                   ))}
-                </div>
+                </motion.div>
               </motion.div>
               
               {/* Decorative elements */}
-              <div className="absolute -z-10 size-64 rounded-full bg-habit-purple/5 blur-3xl -top-10 -right-10" />
+              <motion.div 
+                className="absolute -z-10 size-64 rounded-full bg-habit-purple/5 blur-3xl -top-10 -right-10"
+                animate={{ 
+                  scale: [1, 1.1, 1],
+                  opacity: [0.3, 0.6, 0.3],
+                }}
+                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+              />
             </motion.div>
           </div>
         </div>
       </section>
       
-      {/* CTA Section */}
+      {/* CTA Section with enhanced animations */}
       <section className="py-24 bg-muted/30">
         <div className="container px-4 mx-auto">
-          <div className="max-w-3xl mx-auto text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.5 }}
-              transition={{ duration: 0.6 }}
+          <motion.div 
+            className="max-w-3xl mx-auto text-center"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.5 }}
+            transition={{ duration: 0.6 }}
+          >
+            <motion.h2 
+              className="text-3xl md:text-4xl font-bold mb-6"
+              variants={fadeIn}
+              initial="initial"
+              whileInView="animate"
+              viewport={{ once: true }}
             >
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">
-                Ready to transform your habits?
-              </h2>
-              <p className="text-lg text-foreground/70 mb-8 max-w-xl mx-auto">
-                Join thousands of users who have successfully built lasting habits using HabitVault's visual tracking system.
-              </p>
-              
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="inline-block"
+              Ready to transform your habits?
+            </motion.h2>
+            <motion.p 
+              className="text-lg text-foreground/70 mb-8 max-w-xl mx-auto"
+              variants={fadeInUp}
+              initial="initial"
+              whileInView="animate"
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+            >
+              Join thousands of users who have successfully built lasting habits using HabitVault's visual tracking system.
+            </motion.p>
+            
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="inline-block"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.4 }}
+            >
+              <Button 
+                className="group bg-habit-purple hover:bg-habit-purple/90 rounded-full h-12 px-6 text-base relative overflow-hidden"
+                onClick={() => navigate('/register')}
               >
-                <Button 
-                  className="group bg-habit-purple hover:bg-habit-purple/90 rounded-full h-12 px-6 text-base relative overflow-hidden"
-                  onClick={() => navigate('/register')}
-                >
-                  <motion.span 
-                    className="absolute inset-0 bg-white/20 rounded-full"
-                    initial={{ scale: 0, opacity: 0 }}
-                    whileHover={{ 
-                      scale: 1.5, 
-                      opacity: 0.3,
-                      transition: { repeat: Infinity, duration: 1.5 }
-                    }}
-                  />
-                  Get Started Free
-                  <ChevronRight className="ml-2 size-4 transition-transform group-hover:translate-x-1" />
-                </Button>
-              </motion.div>
-              <p className="text-sm text-foreground/50 mt-4">
-                No credit card required. Free plan available.
-              </p>
+                <motion.span 
+                  className="absolute inset-0 bg-white/20 rounded-full"
+                  initial={{ scale: 0, opacity: 0 }}
+                  whileHover={{ 
+                    scale: 1.5, 
+                    opacity: 0.3,
+                    transition: { repeat: Infinity, duration: 1.5 }
+                  }}
+                />
+                Get Started Free
+                <ChevronRight className="ml-2 size-4 transition-transform group-hover:translate-x-1" />
+              </Button>
             </motion.div>
-          </div>
+            <motion.p 
+              className="text-sm text-foreground/50 mt-4"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.6 }}
+            >
+              No credit card required. Free plan available.
+            </motion.p>
+          </motion.div>
         </div>
       </section>
     </div>
@@ -345,11 +462,15 @@ interface FeatureCardProps {
 const FeatureCard = ({ icon, title, description, inView, delay }: FeatureCardProps) => {
   return (
     <motion.div 
-      className="bg-card border border-border/40 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow"
+      className="bg-card border border-border/40 rounded-xl p-6 shadow-sm bg-gradient-card"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: inView ? 1 : 0, y: inView ? 0 : 20 }}
       transition={{ duration: 0.5, delay }}
-      whileHover={{ y: -5, transition: { duration: 0.2 } }}
+      whileHover={{ 
+        y: -8, 
+        boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+        transition: { duration: 0.2 }
+      }}
     >
       <motion.div 
         className="size-12 bg-habit-purple/10 rounded-lg flex items-center justify-center mb-4 text-habit-purple"

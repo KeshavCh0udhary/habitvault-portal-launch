@@ -2,6 +2,7 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
 
 interface LogoProps {
   variant?: 'default' | 'large';
@@ -42,11 +43,13 @@ export const Logo = ({
           damping: 10 
         }}
       >
-        <img 
-          src="/lovable-uploads/2f53c1ca-c496-45d8-a6f2-9bb510030d61.png" 
-          alt="HabitVault Logo" 
-          className="w-full h-full object-contain"
-        />
+        <AspectRatio ratio={1} className="w-full h-full">
+          <img 
+            src="/lovable-uploads/2f53c1ca-c496-45d8-a6f2-9bb510030d61.png" 
+            alt="HabitVault Logo" 
+            className="w-full h-full object-contain"
+          />
+        </AspectRatio>
       </motion.div>
       
       {showText && (
