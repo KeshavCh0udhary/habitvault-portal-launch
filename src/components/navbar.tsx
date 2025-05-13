@@ -6,6 +6,7 @@ import { useTheme } from '@/components/theme-provider';
 import { useAuth } from '@/contexts/auth-context';
 import { Sun, Moon, Menu, X, User, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Logo } from '@/components/logo';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -75,18 +76,7 @@ const Navbar = ({ scrolled }: NavbarProps) => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
-          <Link
-            to="/"
-            className="flex items-center space-x-2 shrink-0"
-            aria-label="HabitVault"
-          >
-            <motion.div
-              className="size-9 bg-gradient-to-tr from-habit-purple to-habit-teal rounded-xl"
-              whileHover={{ rotate: 10 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 10 }}
-            />
-            <span className="font-bold text-xl">HabitVault</span>
-          </Link>
+          <Logo animated={true} />
 
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center space-x-8">

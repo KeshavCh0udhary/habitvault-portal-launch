@@ -5,6 +5,7 @@ import { motion, useScroll, useTransform, useInView } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/auth-context';
 import CursorGradient from '@/components/cursor-gradient';
+import { Logo } from '@/components/logo';
 import { ChevronRight, ArrowRight, CheckCircle2, TrendingUp, Calendar, Target } from 'lucide-react';
 
 const HomePage = () => {
@@ -33,24 +34,20 @@ const HomePage = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <CursorGradient className="min-h-screen flex items-center pt-16">
+      <CursorGradient className="min-h-screen flex items-center pt-16" intensity="high">
         <div ref={heroRef} className="container px-4 mx-auto">
           <motion.div 
             className="max-w-4xl mx-auto text-center"
             style={{ opacity: opacityHero, y: yHero }}
           >
-            <motion.div 
-              className="size-20 bg-gradient-to-tr from-habit-purple to-habit-teal rounded-2xl mx-auto mb-8"
-              animate={{ 
-                rotate: [0, 10, 0],
-                scale: [1, 1.05, 1]
-              }}
-              transition={{
-                duration: 6,
-                ease: "easeInOut",
-                repeat: Infinity,
-              }}
-            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+              className="mx-auto mb-8"
+            >
+              <Logo variant="large" showText={false} />
+            </motion.div>
             
             <motion.h1 
               className="text-4xl md:text-6xl font-bold mb-6 leading-tight tracking-tight"
@@ -79,20 +76,39 @@ const HomePage = () => {
               animate={{ opacity: heroInView ? 1 : 0, y: heroInView ? 0 : 20 }}
               transition={{ duration: 0.6, delay: 0.4 }}
             >
-              <Button 
-                className="group bg-habit-purple hover:bg-habit-purple/90 rounded-full h-12 px-6 text-base"
-                onClick={() => navigate('/register')}
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.98 }}
               >
-                Get Started Free
-                <ChevronRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Button>
-              <Button 
-                variant="outline"
-                className="rounded-full h-12 px-6 text-base"
-                onClick={() => navigate('/login')}
+                <Button 
+                  className="group bg-habit-purple hover:bg-habit-purple/90 rounded-full h-12 px-6 text-base relative overflow-hidden"
+                  onClick={() => navigate('/register')}
+                >
+                  <motion.span 
+                    className="absolute inset-0 bg-white/20 rounded-full"
+                    initial={{ scale: 0, opacity: 0 }}
+                    whileHover={{ 
+                      scale: 1.5, 
+                      opacity: 0.3,
+                      transition: { repeat: Infinity, duration: 1.5 }
+                    }}
+                  />
+                  Get Started Free
+                  <ChevronRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </Button>
+              </motion.div>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.98 }}
               >
-                Sign In
-              </Button>
+                <Button 
+                  variant="outline"
+                  className="rounded-full h-12 px-6 text-base"
+                  onClick={() => navigate('/login')}
+                >
+                  Sign In
+                </Button>
+              </motion.div>
             </motion.div>
             
             <motion.div 
@@ -100,6 +116,10 @@ const HomePage = () => {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: heroInView ? 1 : 0, scale: heroInView ? 1 : 0.95 }}
               transition={{ duration: 0.8, delay: 0.6 }}
+              whileHover={{ 
+                y: -5,
+                transition: { duration: 0.2 }
+              }}
             >
               <div className="relative mx-auto max-w-3xl rounded-2xl shadow-xl overflow-hidden border border-border/30">
                 <div className="bg-black/5 dark:bg-white/5 h-8 flex items-center px-4 border-b border-border/30">
@@ -196,13 +216,18 @@ const HomePage = () => {
                 ))}
               </ul>
               <div className="mt-8">
-                <Button 
-                  className="group"
-                  onClick={() => navigate('/register')}
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  Start Tracking
-                  <ArrowRight className="ml-2 size-4 transition-transform group-hover:translate-x-1" />
-                </Button>
+                  <Button 
+                    className="group"
+                    onClick={() => navigate('/register')}
+                  >
+                    Start Tracking
+                    <ArrowRight className="ml-2 size-4 transition-transform group-hover:translate-x-1" />
+                  </Button>
+                </motion.div>
               </div>
             </motion.div>
             
@@ -212,7 +237,10 @@ const HomePage = () => {
               animate={{ opacity: statsInView ? 1 : 0, scale: statsInView ? 1 : 0.9 }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              <div className="bg-card rounded-xl border border-border/40 p-6 shadow-lg">
+              <motion.div 
+                className="bg-card rounded-xl border border-border/40 p-6 shadow-lg"
+                whileHover={{ y: -5, transition: { duration: 0.2 } }}
+              >
                 <h3 className="text-xl font-semibold mb-4 flex items-center">
                   <TrendingUp className="mr-2 size-5 text-habit-teal" />
                   Habit Progress
@@ -247,7 +275,7 @@ const HomePage = () => {
                     </div>
                   ))}
                 </div>
-              </div>
+              </motion.div>
               
               {/* Decorative elements */}
               <div className="absolute -z-10 size-64 rounded-full bg-habit-purple/5 blur-3xl -top-10 -right-10" />
@@ -260,22 +288,45 @@ const HomePage = () => {
       <section className="py-24 bg-muted/30">
         <div className="container px-4 mx-auto">
           <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">
-              Ready to transform your habits?
-            </h2>
-            <p className="text-lg text-foreground/70 mb-8 max-w-xl mx-auto">
-              Join thousands of users who have successfully built lasting habits using HabitVault's visual tracking system.
-            </p>
-            <Button 
-              className="group bg-habit-purple hover:bg-habit-purple/90 rounded-full h-12 px-6 text-base"
-              onClick={() => navigate('/register')}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.5 }}
+              transition={{ duration: 0.6 }}
             >
-              Get Started Free
-              <ChevronRight className="ml-2 size-4 transition-transform group-hover:translate-x-1" />
-            </Button>
-            <p className="text-sm text-foreground/50 mt-4">
-              No credit card required. Free plan available.
-            </p>
+              <h2 className="text-3xl md:text-4xl font-bold mb-6">
+                Ready to transform your habits?
+              </h2>
+              <p className="text-lg text-foreground/70 mb-8 max-w-xl mx-auto">
+                Join thousands of users who have successfully built lasting habits using HabitVault's visual tracking system.
+              </p>
+              
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="inline-block"
+              >
+                <Button 
+                  className="group bg-habit-purple hover:bg-habit-purple/90 rounded-full h-12 px-6 text-base relative overflow-hidden"
+                  onClick={() => navigate('/register')}
+                >
+                  <motion.span 
+                    className="absolute inset-0 bg-white/20 rounded-full"
+                    initial={{ scale: 0, opacity: 0 }}
+                    whileHover={{ 
+                      scale: 1.5, 
+                      opacity: 0.3,
+                      transition: { repeat: Infinity, duration: 1.5 }
+                    }}
+                  />
+                  Get Started Free
+                  <ChevronRight className="ml-2 size-4 transition-transform group-hover:translate-x-1" />
+                </Button>
+              </motion.div>
+              <p className="text-sm text-foreground/50 mt-4">
+                No credit card required. Free plan available.
+              </p>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -298,10 +349,18 @@ const FeatureCard = ({ icon, title, description, inView, delay }: FeatureCardPro
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: inView ? 1 : 0, y: inView ? 0 : 20 }}
       transition={{ duration: 0.5, delay }}
+      whileHover={{ y: -5, transition: { duration: 0.2 } }}
     >
-      <div className="size-12 bg-habit-purple/10 rounded-lg flex items-center justify-center mb-4 text-habit-purple">
+      <motion.div 
+        className="size-12 bg-habit-purple/10 rounded-lg flex items-center justify-center mb-4 text-habit-purple"
+        whileHover={{ 
+          scale: 1.1, 
+          rotate: 5,
+          transition: { duration: 0.2 } 
+        }}
+      >
         {icon}
-      </div>
+      </motion.div>
       <h3 className="text-xl font-semibold mb-2">{title}</h3>
       <p className="text-foreground/70">{description}</p>
     </motion.div>
