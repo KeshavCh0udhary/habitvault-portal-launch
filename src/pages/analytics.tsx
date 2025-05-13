@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -17,6 +16,7 @@ import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import HabitHistoryCalendar from '@/components/habits/habit-history-calendar';
+import { getMissingCheckIns } from '@/utils/habit-utils';
 
 // Chart colors
 const COLORS = ['#10b981', '#f43f5e', '#f59e0b', '#8b5cf6', '#06b6d4', '#ec4899'];
@@ -58,13 +58,20 @@ export default function AnalyticsPage() {
   const [selectedTimeRange, setSelectedTimeRange] = useState(() => {
     return localStorage.getItem('habitvault-analytics-range') || "30days";
   });
-  const [selectedView, setSelectedView] = useState("week");
+  const [selectedView, setSelectedView] = useState(() => {
+    return localStorage.getItem('habitvault-calendar-view') || "week";
+  });
   const [selectedHabit, setSelectedHabit] = useState<string>("all");
   
   // Save preferred time range to localStorage
   useEffect(() => {
     localStorage.setItem('habitvault-analytics-range', selectedTimeRange);
   }, [selectedTimeRange]);
+  
+  // Save preferred calendar view to localStorage
+  useEffect(() => {
+    localStorage.setItem('habitvault-calendar-view', selectedView);
+  }, [selectedView]);
 
   // Fetch habits and check-ins
   useEffect(() => {
@@ -74,8 +81,11 @@ export default function AnalyticsPage() {
         const habitsData = await habitService.getUserHabits();
         const checkInsData = await habitService.getAllCheckIns();
         
+        // Generate missing check-ins for past dates
+        const missingCheckIns = getMissingCheckIns(habitsData, checkInsData);
+        
         setHabits(habitsData);
-        setCheckIns(checkInsData);
+        setCheckIns([...checkInsData, ...missingCheckIns]);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -118,7 +128,8 @@ export default function AnalyticsPage() {
         completedCount: 0, 
         totalDueHabits: 0,
         missedCount: 0,
-        skippedCount: 0
+        skippedCount: 0,
+        totalHabits: habits.length
       };
     }
     
@@ -161,7 +172,8 @@ export default function AnalyticsPage() {
         completedCount: completedCheckIns, 
         totalDueHabits: 0,
         missedCount: missedCheckIns,
-        skippedCount: skippedCheckIns
+        skippedCount: skippedCheckIns,
+        totalHabits: habits.length
       };
     }
     
@@ -170,9 +182,10 @@ export default function AnalyticsPage() {
       completedCount: completedCheckIns,
       totalDueHabits: potentialCheckIns,
       missedCount: missedCheckIns,
-      skippedCount: skippedCheckIns
+      skippedCount: skippedCheckIns,
+      totalHabits: habits.length
     };
-  }, [filteredCheckIns, filteredHabits, dateRange.start, dateRange.end]);
+  }, [filteredCheckIns, filteredHabits, dateRange.start, dateRange.end, habits.length]);
   
   // Calculate check-in distribution
   const statusDistribution = React.useMemo(() => {
@@ -339,7 +352,21 @@ export default function AnalyticsPage() {
       </div>
       
       {/* Stats cards */}
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base font-medium">Total Habits</CardTitle>
+            <CardDescription>
+              Total number of habits created
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">
+              {calculatedStats.totalHabits}
+            </div>
+          </CardContent>
+        </Card>
+        
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-medium">Completion Rate</CardTitle>
@@ -393,7 +420,7 @@ export default function AnalyticsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {habitCompletionData.length > 0 ? (
+            {habitCompletionData && habitCompletionData.length > 0 ? (
               <div className="flex flex-col mt-1">
                 <div className="text-xl font-bold truncate">
                   {habitCompletionData[0].name}
@@ -599,7 +626,7 @@ export default function AnalyticsPage() {
             <CardContent>
               <div className="max-w-3xl mx-auto">
                 <HabitHistoryCalendar 
-                  checkIns={checkIns as unknown as CheckIn[]} 
+                  checkIns={checkIns} 
                   habits={habits} 
                   view={selectedView as "week" | "month"} 
                 />

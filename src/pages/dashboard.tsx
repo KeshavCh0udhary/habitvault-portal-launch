@@ -11,13 +11,22 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CalendarDays, ListChecks } from 'lucide-react';
 import { format } from 'date-fns';
+import DailyQuote from '@/components/daily-quote';
 
 export default function Dashboard() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('today');
   const [completedTodayIds, setCompletedTodayIds] = useState<string[]>([]);
+  const [showQuote, setShowQuote] = useState(() => {
+    return localStorage.getItem('habitvault-show-quote') !== 'false';
+  });
   const today = format(new Date(), 'yyyy-MM-dd');
+
+  // Save quote visibility preference
+  useEffect(() => {
+    localStorage.setItem('habitvault-show-quote', showQuote.toString());
+  }, [showQuote]);
 
   // Fetch all habits
   const { data: habits, error, isLoading } = useQuery({
@@ -52,6 +61,11 @@ export default function Dashboard() {
   const handleHabitsUpdate = () => {
     queryClient.invalidateQueries({ queryKey: ['habits'] });
     queryClient.invalidateQueries({ queryKey: ['checkIns', today] });
+  };
+
+  // Toggle quote visibility
+  const toggleQuote = () => {
+    setShowQuote(prev => !prev);
   };
 
   // Filter habits due today, excluding those already completed
@@ -105,6 +119,9 @@ export default function Dashboard() {
           Track your progress and build lasting habits
         </p>
       </div>
+
+      {/* Motivational Quote Section */}
+      {showQuote && <DailyQuote onToggle={toggleQuote} />}
 
       {/* Stats Section */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

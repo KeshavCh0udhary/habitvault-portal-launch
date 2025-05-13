@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
-import { RefreshCw, Quote } from 'lucide-react';
+import { RefreshCw, Quote, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 // List of motivational quotes about habits and consistency
@@ -82,7 +82,11 @@ const getDailyQuote = () => {
   return quotes[quoteIndex];
 };
 
-const DailyQuote: React.FC = () => {
+interface DailyQuoteProps {
+  onToggle?: () => void;
+}
+
+const DailyQuote: React.FC<DailyQuoteProps> = ({ onToggle }) => {
   const [quote, setQuote] = useState(() => {
     // Get stored quote or generate new daily quote
     const storedQuote = localStorage.getItem('habitvault-daily-quote');
@@ -118,9 +122,16 @@ const DailyQuote: React.FC = () => {
       <CardContent className="p-6">
         <div className="flex items-start justify-between">
           <Quote className="h-6 w-6 text-habit-purple mt-1" />
-          <Button variant="ghost" size="icon" onClick={changeQuote} title="Get another quote">
-            <RefreshCw className="h-4 w-4" />
-          </Button>
+          <div className="flex space-x-2">
+            <Button variant="ghost" size="icon" onClick={changeQuote} title="Get another quote">
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+            {onToggle && (
+              <Button variant="ghost" size="icon" onClick={onToggle} title="Hide quote">
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
         </div>
         
         <AnimatePresence mode="wait">

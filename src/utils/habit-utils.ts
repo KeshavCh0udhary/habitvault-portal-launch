@@ -1,6 +1,6 @@
 
-import { format, isToday, isBefore, parseISO, startOfDay } from 'date-fns';
-import { Habit, TargetDay } from '@/types/habit';
+import { format, isToday, isBefore, parseISO, startOfDay, differenceInDays, eachDayOfInterval } from 'date-fns';
+import { Habit, TargetDay, CheckIn } from '@/types/habit';
 
 // Check if a habit is due on a specific date
 export function isHabitDueOnDate(habit: Habit, date: Date): boolean {
@@ -39,6 +39,64 @@ export function getHabitsDueToday(habits: Habit[], completedHabitIds: string[] =
   }
   
   return habitsDueByDay;
+}
+
+// Get missing check-ins for habits with past start dates
+export function getMissingCheckIns(habits: Habit[], existingCheckIns: CheckIn[]): CheckIn[] {
+  const today = startOfDay(new Date());
+  const missingCheckIns: CheckIn[] = [];
+  
+  // Create a map of existing check-ins for quick lookup
+  const checkInMap: Record<string, Record<string, CheckIn>> = {};
+  existingCheckIns.forEach(checkIn => {
+    if (!checkInMap[checkIn.habit_id]) {
+      checkInMap[checkIn.habit_id] = {};
+    }
+    checkInMap[checkIn.habit_id][checkIn.date] = checkIn;
+  });
+  
+  // For each habit
+  habits.forEach(habit => {
+    const startDate = parseISO(habit.start_date);
+    
+    // Skip if habit starts today or in the future
+    if (!isBefore(startDate, today)) {
+      return;
+    }
+    
+    // Get all dates from start date to yesterday
+    const pastDays = eachDayOfInterval({
+      start: startDate,
+      end: today
+    });
+    
+    // For each past day, check if the habit was due and if there's a check-in
+    pastDays.forEach(date => {
+      // Skip today
+      if (isToday(date)) {
+        return;
+      }
+      
+      // Check if habit was due on this date
+      if (isHabitDueOnDate(habit, date)) {
+        const dateStr = format(date, 'yyyy-MM-dd');
+        
+        // If no check-in exists for this date and habit, consider it missed
+        if (!checkInMap[habit.id] || !checkInMap[habit.id][dateStr]) {
+          missingCheckIns.push({
+            id: `missing-${habit.id}-${dateStr}`,
+            habit_id: habit.id,
+            date: dateStr,
+            status: 'missed',
+            created_at: new Date().toISOString(),
+            user_id: habit.user_id
+          });
+        }
+      }
+    });
+  });
+  
+  return missingCheckIns;
 }
 
 // Get all possible target day options
