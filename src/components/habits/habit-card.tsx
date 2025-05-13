@@ -52,7 +52,7 @@ export default function HabitCard({ habit, onUpdate, showCheckIn = true, date = 
   
   return (
     <>
-      <Card className="overflow-hidden transition-all hover:shadow-md">
+      <Card className="overflow-hidden transition-all hover:shadow-md h-full flex flex-col">
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
             <CardTitle className="text-xl font-bold line-clamp-2">{habit.name}</CardTitle>
@@ -90,20 +90,24 @@ export default function HabitCard({ habit, onUpdate, showCheckIn = true, date = 
             </DropdownMenu>
           </div>
         </CardHeader>
-        <CardContent className="pb-2">
-          {habit.description && (
-            <p className="text-muted-foreground text-sm mb-3">{habit.description}</p>
-          )}
-          
-          <div className="flex flex-wrap gap-3 text-sm">
-            <div className="flex items-center gap-1">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-              <span>{formatTargetDays(habit.target_days)}</span>
-            </div>
+        <CardContent className="pb-2 flex-grow">
+          <div className="flex flex-col h-full">
+            {habit.description ? (
+              <p className="text-muted-foreground text-sm mb-3">{habit.description}</p>
+            ) : (
+              <div className="mb-3 text-sm text-transparent">No description</div>
+            )}
             
-            <div className="flex items-center gap-1">
-              <Flame className={`h-4 w-4 ${habit.current_streak > 0 ? 'text-habit-purple' : 'text-muted-foreground'}`} />
-              <span>{formatStreak(habit.current_streak)}</span>
+            <div className="flex flex-wrap gap-3 text-sm mt-auto">
+              <div className="flex items-center gap-1">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <span>{formatTargetDays(habit.target_days)}</span>
+              </div>
+              
+              <div className="flex items-center gap-1">
+                <Flame className={`h-4 w-4 ${habit.current_streak > 0 ? 'text-habit-purple' : 'text-muted-foreground'}`} />
+                <span>{formatStreak(habit.current_streak)}</span>
+              </div>
             </div>
           </div>
           
@@ -113,7 +117,7 @@ export default function HabitCard({ habit, onUpdate, showCheckIn = true, date = 
             </div>
           )}
         </CardContent>
-        <CardFooter className="pt-0">
+        <CardFooter className="pt-0 mt-auto">
           <div className="w-full flex justify-between items-center text-xs text-muted-foreground">
             <span>Started: {format(new Date(habit.start_date), 'MMM d, yyyy')}</span>
             {habit.longest_streak > 0 && (
