@@ -1,10 +1,14 @@
+
 import { supabase } from '@/integrations/supabase/client';
-import { Habit, NewHabit, HabitCheckIn, HabitCheckInUpdate } from '@/types/habit';
+import { Habit, NewHabit, CheckIn, HabitCheckInUpdate } from '@/types/habit';
 import { format } from 'date-fns';
 
 export const habitService = {
   // Habit CRUD operations
   async createHabit(habit: NewHabit): Promise<Habit | null> {
+    const userResponse = await supabase.auth.getUser();
+    const userId = userResponse.data.user?.id;
+    
     const { data, error } = await supabase
       .from('habits')
       .insert({
@@ -12,7 +16,7 @@ export const habitService = {
         description: habit.description || null,
         start_date: habit.start_date || format(new Date(), 'yyyy-MM-dd'),
         target_days: habit.target_days,
-        user_id: (await supabase.auth.getUser()).data.user?.id
+        user_id: userId
       })
       .select()
       .single();
@@ -22,7 +26,7 @@ export const habitService = {
       throw error;
     }
 
-    return data as Habit;
+    return data as unknown as Habit;
   },
 
   async getUserHabits(): Promise<Habit[]> {
@@ -36,7 +40,7 @@ export const habitService = {
       throw error;
     }
 
-    return data as Habit[];
+    return data as unknown as Habit[];
   },
 
   async getHabit(id: string): Promise<Habit | null> {
@@ -51,7 +55,7 @@ export const habitService = {
       throw error;
     }
 
-    return data as Habit;
+    return data as unknown as Habit;
   },
 
   async updateHabit(id: string, habit: Partial<Habit>): Promise<Habit | null> {
@@ -70,7 +74,7 @@ export const habitService = {
       throw error;
     }
 
-    return data as Habit;
+    return data as unknown as Habit;
   },
 
   async deleteHabit(id: string): Promise<void> {
@@ -86,7 +90,7 @@ export const habitService = {
   },
 
   // Check-in operations
-  async getHabitCheckins(habitId: string): Promise<HabitCheckIn[]> {
+  async getHabitCheckins(habitId: string): Promise<CheckIn[]> {
     const { data, error } = await supabase
       .from('habit_checkins')
       .select('*')
@@ -98,10 +102,10 @@ export const habitService = {
       throw error;
     }
 
-    return data as HabitCheckIn[];
+    return data as unknown as CheckIn[];
   },
 
-  async getCheckInsForDate(date: Date): Promise<HabitCheckIn[]> {
+  async getCheckInsForDate(date: Date): Promise<CheckIn[]> {
     const dateString = format(date, 'yyyy-MM-dd');
     
     const { data, error } = await supabase
@@ -114,12 +118,13 @@ export const habitService = {
       throw error;
     }
 
-    return data as HabitCheckIn[];
+    return data as unknown as CheckIn[];
   },
 
-  async checkInHabit(checkIn: HabitCheckInUpdate): Promise<HabitCheckIn | null> {
+  async checkInHabit(checkIn: HabitCheckInUpdate): Promise<CheckIn | null> {
     // Get current user
-    const userId = (await supabase.auth.getUser()).data.user?.id;
+    const userResponse = await supabase.auth.getUser();
+    const userId = userResponse.data.user?.id;
     
     if (!userId) {
       throw new Error("User not authenticated");
@@ -148,7 +153,7 @@ export const habitService = {
       }
 
       await this.updateStreakCount(checkIn.habit_id);
-      return data as HabitCheckIn;
+      return data as unknown as CheckIn;
     } else {
       // Create new check-in
       const { data, error } = await supabase
@@ -168,7 +173,7 @@ export const habitService = {
       }
 
       await this.updateStreakCount(checkIn.habit_id);
-      return data as HabitCheckIn;
+      return data as unknown as CheckIn;
     }
   },
 
@@ -224,7 +229,7 @@ export const habitService = {
     }
     
     // Calculate longest streak
-    let longestStreak = habit.longest_streak;
+    let longestStreak = habit.longest_streak || 0;
     if (currentStreak > longestStreak) {
       longestStreak = currentStreak;
     }
@@ -240,9 +245,11 @@ export const habitService = {
       .eq('id', habitId);
   },
 
-  async getAllCheckIns() {
+  async getAllCheckIns(): Promise<CheckIn[]> {
     try {
-      const { user } = await supabase.auth.getUser();
+      const userResponse = await supabase.auth.getUser();
+      const user = userResponse.data.user;
+      
       if (!user) throw new Error("User not authenticated");
 
       const { data, error } = await supabase
@@ -251,7 +258,7 @@ export const habitService = {
         .eq('user_id', user.id);
 
       if (error) throw error;
-      return data || [];
+      return (data || []) as unknown as CheckIn[];
     } catch (error) {
       console.error("Error fetching all check-ins:", error);
       return [];

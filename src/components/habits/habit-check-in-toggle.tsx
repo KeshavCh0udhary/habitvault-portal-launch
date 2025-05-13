@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Habit, HabitCheckIn } from '@/types/habit';
+import { Habit, CheckIn } from '@/types/habit';
 import { habitService } from '@/services/habit-service';
 import { canCheckInHabit } from '@/utils/habit-utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -35,7 +35,7 @@ export default function HabitCheckInToggle({ habit, date, onUpdate }: HabitCheck
         const todayCheckIn = checkIns.find(checkIn => checkIn.date === dateString);
         
         if (todayCheckIn) {
-          setCheckInStatus(todayCheckIn.status);
+          setCheckInStatus(todayCheckIn.status as 'completed' | 'missed');
         } else {
           setCheckInStatus(null);
         }
