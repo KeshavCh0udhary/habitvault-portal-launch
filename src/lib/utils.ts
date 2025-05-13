@@ -65,6 +65,46 @@ export const itemAnimation = {
   show: { opacity: 1, y: 0 }
 }
 
+// New animations for the landing page and dashboard
+export const slideInRight = {
+  initial: { opacity: 0, x: -50 },
+  animate: { opacity: 1, x: 0 },
+  transition: { duration: 0.6, type: "spring", stiffness: 100 }
+}
+
+export const slideInLeft = {
+  initial: { opacity: 0, x: 50 },
+  animate: { opacity: 1, x: 0 },
+  transition: { duration: 0.6, type: "spring", stiffness: 100 }
+}
+
+export const rotateIn = {
+  initial: { opacity: 0, rotate: -5, scale: 0.9 },
+  animate: { opacity: 1, rotate: 0, scale: 1 },
+  transition: { duration: 0.5, type: "spring", stiffness: 200 }
+}
+
+export const bounceIn = {
+  initial: { opacity: 0, y: 50 },
+  animate: { opacity: 1, y: 0 },
+  transition: { type: "spring", stiffness: 300, damping: 15 }
+}
+
+export const staggerContainer = {
+  initial: {},
+  animate: { transition: { staggerChildren: 0.1 } }
+}
+
+export const staggerFast = {
+  initial: {},
+  animate: { transition: { staggerChildren: 0.05 } }
+}
+
+export const staggerSlow = {
+  initial: {},
+  animate: { transition: { staggerChildren: 0.2 } }
+}
+
 // Function to create a staggered container animation with custom parameters
 export const createStaggerContainer = (stagger = 0.1, delay = 0.3) => ({
   hidden: { opacity: 0 },
@@ -138,29 +178,65 @@ export const pulse = {
   }
 }
 
-// Chart animation variants
-export const chartAnimation = {
-  hidden: { opacity: 0, scale: 0.9 },
-  visible: {
+// New animated variants for dashboard
+export const dashboardCardAnimate = {
+  initial: { opacity: 0, y: 20 },
+  animate: { 
+    opacity: 1, 
+    y: 0,
+    transition: { duration: 0.5 }
+  }
+}
+
+export const chartAnimate = {
+  initial: { opacity: 0, scale: 0.95 },
+  animate: {
     opacity: 1,
     scale: 1,
     transition: { duration: 0.6, ease: "easeOut" }
   }
 }
 
-// List item stagger animation
-export const listItem = (i: number) => ({
-  hidden: { opacity: 0, y: 10 },
-  visible: {
-    opacity: 1,
-    y: 0,
+// For counters and statistics
+export const countUp = {
+  initial: { opacity: 0, y: 10 },
+  animate: { opacity: 1, y: 0 }
+}
+
+// Blog elements animations
+export const blogPostAnimation = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  transition: { duration: 0.5 }
+}
+
+export const blogHeaderAnimation = {
+  initial: { opacity: 0, y: -20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.7, type: "spring" }
+}
+
+export const blogImageAnimation = {
+  initial: { opacity: 0, scale: 0.9 },
+  animate: { opacity: 1, scale: 1 },
+  transition: { duration: 0.5 }
+}
+
+// Enhanced child stagger effect
+export const parentStagger = {
+  initial: {},
+  animate: {
     transition: {
-      delay: i * 0.05,
-      duration: 0.4,
-      ease: "easeOut"
+      staggerChildren: 0.1,
+      delayChildren: 0.2
     }
   }
-})
+}
+
+export const childStagger = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 }
+}
 
 // Background gradient movement
 export const gradientMovement = {
