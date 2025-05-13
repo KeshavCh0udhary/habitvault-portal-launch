@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { format, parseISO } from 'date-fns';
-import { CheckCircle, XCircle, Clock } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import { Habit, CheckIn } from '@/types/habit';
 import { habitService } from '@/services/habit-service';
 import { canCheckInHabit } from '@/utils/habit-utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import HabitCheckInDialog from './habit-check-in-dialog';
 
 interface HabitCheckInToggleProps {
   habit: Habit;
@@ -21,6 +22,7 @@ export default function HabitCheckInToggle({ habit, date, onUpdate }: HabitCheck
   const [checkInStatus, setCheckInStatus] = useState<'completed' | 'missed' | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [showPastCheckInDialog, setShowPastCheckInDialog] = useState(false);
   
   const dateString = format(date, 'yyyy-MM-dd');
   const isFutureHabit = !canCheckInHabit(habit, date);
@@ -53,6 +55,12 @@ export default function HabitCheckInToggle({ habit, date, onUpdate }: HabitCheck
   const handleCheckIn = async (status: 'completed' | 'missed') => {
     if (isFutureHabit) {
       toast.error(`This habit starts on ${startDateFormatted}. You can't check in yet.`);
+      return;
+    }
+    
+    // Prevent duplicate check-ins with the same status
+    if (checkInStatus === status) {
+      toast.info(`This habit is already marked as ${status} for today.`);
       return;
     }
     
@@ -105,28 +113,47 @@ export default function HabitCheckInToggle({ habit, date, onUpdate }: HabitCheck
   }
   
   return (
-    <div className="flex items-center justify-center gap-2">
-      <Button
-        variant={checkInStatus === 'completed' ? 'default' : 'outline'}
-        size="sm"
-        className={`flex-1 ${checkInStatus === 'completed' ? 'bg-green-600 hover:bg-green-700' : ''}`}
-        onClick={() => handleCheckIn('completed')}
-        disabled={updating}
+    <div className="flex flex-col items-center justify-center gap-2">
+      <div className="flex items-center justify-center gap-2 w-full">
+        <Button
+          variant={checkInStatus === 'completed' ? 'default' : 'outline'}
+          size="sm"
+          className={`flex-1 ${checkInStatus === 'completed' ? 'bg-green-600 hover:bg-green-700' : ''}`}
+          onClick={() => handleCheckIn('completed')}
+          disabled={updating}
+        >
+          <CheckCircle className="mr-2 h-4 w-4" />
+          Complete
+        </Button>
+        
+        <Button
+          variant={checkInStatus === 'missed' ? 'default' : 'outline'}
+          size="sm"
+          className={`flex-1 ${checkInStatus === 'missed' ? 'bg-red-600 hover:bg-red-700' : ''}`}
+          onClick={() => handleCheckIn('missed')}
+          disabled={updating}
+        >
+          <XCircle className="mr-2 h-4 w-4" />
+          Skip
+        </Button>
+      </div>
+      
+      <Button 
+        variant="ghost" 
+        size="sm" 
+        className="w-full text-xs"
+        onClick={() => setShowPastCheckInDialog(true)}
       >
-        <CheckCircle className="mr-2 h-4 w-4" />
-        Complete
+        <Calendar className="h-3 w-3 mr-1" />
+        Check-in for past days
       </Button>
       
-      <Button
-        variant={checkInStatus === 'missed' ? 'default' : 'outline'}
-        size="sm"
-        className={`flex-1 ${checkInStatus === 'missed' ? 'bg-red-600 hover:bg-red-700' : ''}`}
-        onClick={() => handleCheckIn('missed')}
-        disabled={updating}
-      >
-        <XCircle className="mr-2 h-4 w-4" />
-        Skip
-      </Button>
+      <HabitCheckInDialog 
+        habit={habit}
+        open={showPastCheckInDialog}
+        onOpenChange={setShowPastCheckInDialog}
+        onUpdate={onUpdate}
+      />
     </div>
   );
 }

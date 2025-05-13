@@ -9,8 +9,9 @@ import HabitList from '@/components/habits/habit-list';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CalendarDays, ListChecks } from 'lucide-react';
+import { CalendarDays, ListChecks, Eye, EyeOff } from 'lucide-react';
 import { format } from 'date-fns';
+import { Button } from '@/components/ui/button';
 import DailyQuote from '@/components/daily-quote';
 
 export default function Dashboard() {
@@ -115,9 +116,29 @@ export default function Dashboard() {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Track your progress and build lasting habits
-        </p>
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-9 px-2 lg:px-3 flex items-center gap-1 text-muted-foreground"
+            onClick={toggleQuote}
+          >
+            {showQuote ? (
+              <>
+                <EyeOff className="h-4 w-4" />
+                <span className="hidden md:inline">Hide Quote</span>
+              </>
+            ) : (
+              <>
+                <Eye className="h-4 w-4" />
+                <span className="hidden md:inline">Show Quote</span>
+              </>
+            )}
+          </Button>
+          <p className="text-muted-foreground">
+            Track your progress and build lasting habits
+          </p>
+        </div>
       </div>
 
       {/* Motivational Quote Section */}
