@@ -10,11 +10,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CalendarDays, ListChecks } from 'lucide-react';
+import { format } from 'date-fns';
 
 export default function Dashboard() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('today');
+  const [completedTodayIds, setCompletedTodayIds] = useState<string[]>([]);
+  const today = format(new Date(), 'yyyy-MM-dd');
 
   // Fetch all habits
   const { data: habits, error, isLoading } = useQuery({
@@ -22,6 +25,23 @@ export default function Dashboard() {
     queryFn: habitService.getUserHabits,
     enabled: !!user,
   });
+
+  // Fetch today's check-ins to determine completed habits
+  const { data: todayCheckIns } = useQuery({
+    queryKey: ['checkIns', today],
+    queryFn: () => habitService.getCheckInsForDate(new Date()),
+    enabled: !!user,
+  });
+
+  // Update completedTodayIds when check-ins data changes
+  useEffect(() => {
+    if (todayCheckIns) {
+      const completedIds = todayCheckIns
+        .filter(checkIn => checkIn.status === 'completed')
+        .map(checkIn => checkIn.habit_id);
+      setCompletedTodayIds(completedIds);
+    }
+  }, [todayCheckIns]);
 
   // Refresh habits when coming back to page
   useEffect(() => {
@@ -31,9 +51,11 @@ export default function Dashboard() {
   // Handle refresh after check-ins, creating or updating habits
   const handleHabitsUpdate = () => {
     queryClient.invalidateQueries({ queryKey: ['habits'] });
+    queryClient.invalidateQueries({ queryKey: ['checkIns', today] });
   };
 
-  const habitsDueToday = habits ? getHabitsDueToday(habits) : [];
+  // Filter habits due today, excluding those already completed
+  const habitsDueToday = habits ? getHabitsDueToday(habits, completedTodayIds) : [];
 
   // Loading state
   if (isLoading) {
@@ -116,7 +138,7 @@ export default function Dashboard() {
             <span>All Habits</span>
           </TabsTrigger>
         </TabsList>
-        <TabsContent value="today">
+        <TabsContent value="today" className="animate-fade-in">
           <HabitList
             habits={habitsDueToday}
             onUpdate={handleHabitsUpdate}
@@ -128,7 +150,7 @@ export default function Dashboard() {
             }
           />
         </TabsContent>
-        <TabsContent value="all">
+        <TabsContent value="all" className="animate-fade-in">
           <HabitList
             habits={habits || []}
             onUpdate={handleHabitsUpdate}

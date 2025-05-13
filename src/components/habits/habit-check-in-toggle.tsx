@@ -1,13 +1,15 @@
 
 import { useState, useEffect } from 'react';
-import { format } from 'date-fns';
-import { CheckCircle, XCircle, Circle } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
+import { CheckCircle, XCircle, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Habit, HabitCheckIn } from '@/types/habit';
 import { habitService } from '@/services/habit-service';
+import { canCheckInHabit } from '@/utils/habit-utils';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface HabitCheckInToggleProps {
   habit: Habit;
@@ -21,6 +23,8 @@ export default function HabitCheckInToggle({ habit, date, onUpdate }: HabitCheck
   const [updating, setUpdating] = useState(false);
   
   const dateString = format(date, 'yyyy-MM-dd');
+  const isFutureHabit = !canCheckInHabit(habit, date);
+  const startDateFormatted = format(parseISO(habit.start_date), 'MMM d, yyyy');
   
   // Fetch initial check-in status
   useEffect(() => {
@@ -47,6 +51,11 @@ export default function HabitCheckInToggle({ habit, date, onUpdate }: HabitCheck
   
   // Handle check-in or miss
   const handleCheckIn = async (status: 'completed' | 'missed') => {
+    if (isFutureHabit) {
+      toast.error(`This habit starts on ${startDateFormatted}. You can't check in yet.`);
+      return;
+    }
+    
     try {
       setUpdating(true);
       await habitService.checkInHabit({
@@ -68,6 +77,31 @@ export default function HabitCheckInToggle({ habit, date, onUpdate }: HabitCheck
   
   if (loading) {
     return <Skeleton className="h-10 w-full" />;
+  }
+  
+  if (isFutureHabit) {
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="flex items-center justify-center gap-2 opacity-70">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1"
+                disabled={true}
+              >
+                <Clock className="mr-2 h-4 w-4" />
+                Starts {startDateFormatted}
+              </Button>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>This habit starts on {startDateFormatted}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
   }
   
   return (
