@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -62,6 +61,9 @@ export default function AnalyticsPage() {
   const [selectedView, setSelectedView] = useState(() => {
     return localStorage.getItem('habitvault-calendar-view') || "week";
   });
+  const [selectedTab, setSelectedTab] = useState(() => {
+    return localStorage.getItem('habitvault-analytics-tab') || "charts";
+  });
   const [selectedHabit, setSelectedHabit] = useState<string>("all");
   
   // Save preferred time range to localStorage
@@ -73,6 +75,11 @@ export default function AnalyticsPage() {
   useEffect(() => {
     localStorage.setItem('habitvault-calendar-view', selectedView);
   }, [selectedView]);
+
+  // Save preferred tab to localStorage
+  useEffect(() => {
+    localStorage.setItem('habitvault-analytics-tab', selectedTab);
+  }, [selectedTab]);
 
   // Fetch habits and check-ins
   useEffect(() => {
@@ -440,7 +447,7 @@ export default function AnalyticsPage() {
       </div>
       
       {/* Main analytics tabs */}
-      <Tabs defaultValue="charts" className="space-y-4">
+      <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="charts">Charts</TabsTrigger>
           <TabsTrigger value="history">History</TabsTrigger>
@@ -477,7 +484,7 @@ export default function AnalyticsPage() {
                 Breakdown of your habit check-ins
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="overflow-hidden">
               {statusDistribution.length > 0 ? (
                 <div className="h-[300px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
@@ -606,30 +613,17 @@ export default function AnalyticsPage() {
         <TabsContent value="history">
           <Card>
             <CardHeader>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <CardTitle>Habit History</CardTitle>
-                  <CardDescription>
-                    Calendar view of your habit check-ins
-                  </CardDescription>
-                </div>
-                
-                <div className="flex-shrink-0">
-                  <Tabs value={selectedView} onValueChange={setSelectedView} className="w-[240px]">
-                    <TabsList className="grid w-full grid-cols-2">
-                      <TabsTrigger value="week">Week</TabsTrigger>
-                      <TabsTrigger value="month">Month</TabsTrigger>
-                    </TabsList>
-                  </Tabs>
-                </div>
-              </div>
+              <CardTitle>Habit History</CardTitle>
+              <CardDescription>
+                Calendar view of your habit check-ins
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="max-w-3xl mx-auto">
                 <HabitHistoryCalendar 
                   checkIns={checkIns} 
                   habits={habits} 
-                  view={selectedView as "week" | "month"} 
+                  view={selectedView as "week" | "month"}
                 />
               </div>
             </CardContent>
