@@ -27,15 +27,11 @@ export default function HabitCheckInToggle({ habit, date, onUpdate }: HabitCheck
     async function fetchCheckInStatus() {
       try {
         setLoading(true);
-        const { data: checkIns } = await supabase
-          .from('habit_checkins')
-          .select('*')
-          .eq('habit_id', habit.id)
-          .eq('date', dateString)
-          .maybeSingle();
+        const checkIns = await habitService.getHabitCheckins(habit.id);
+        const todayCheckIn = checkIns.find(checkIn => checkIn.date === dateString);
         
-        if (checkIns) {
-          setCheckInStatus(checkIns.status as 'completed' | 'missed');
+        if (todayCheckIn) {
+          setCheckInStatus(todayCheckIn.status);
         } else {
           setCheckInStatus(null);
         }

@@ -12,7 +12,8 @@ export const habitService = {
         name: habit.name,
         description: habit.description || null,
         start_date: habit.start_date || format(new Date(), 'yyyy-MM-dd'),
-        target_days: habit.target_days
+        target_days: habit.target_days,
+        user_id: (await supabase.auth.getUser()).data.user?.id
       })
       .select()
       .single();
@@ -22,7 +23,7 @@ export const habitService = {
       throw error;
     }
 
-    return data;
+    return data as Habit;
   },
 
   async getUserHabits(): Promise<Habit[]> {
@@ -36,7 +37,7 @@ export const habitService = {
       throw error;
     }
 
-    return data || [];
+    return data as Habit[];
   },
 
   async getHabit(id: string): Promise<Habit | null> {
@@ -51,7 +52,7 @@ export const habitService = {
       throw error;
     }
 
-    return data;
+    return data as Habit;
   },
 
   async updateHabit(id: string, habit: Partial<Habit>): Promise<Habit | null> {
@@ -70,7 +71,7 @@ export const habitService = {
       throw error;
     }
 
-    return data;
+    return data as Habit;
   },
 
   async deleteHabit(id: string): Promise<void> {
@@ -98,7 +99,7 @@ export const habitService = {
       throw error;
     }
 
-    return data || [];
+    return data as HabitCheckIn[];
   },
 
   async getCheckInsForDate(date: Date): Promise<HabitCheckIn[]> {
@@ -114,10 +115,17 @@ export const habitService = {
       throw error;
     }
 
-    return data || [];
+    return data as HabitCheckIn[];
   },
 
   async checkInHabit(checkIn: HabitCheckInUpdate): Promise<HabitCheckIn | null> {
+    // Get current user
+    const userId = (await supabase.auth.getUser()).data.user?.id;
+    
+    if (!userId) {
+      throw new Error("User not authenticated");
+    }
+    
     // Check if check-in already exists for this habit and date
     const { data: existingCheckIn } = await supabase
       .from('habit_checkins')
@@ -141,7 +149,7 @@ export const habitService = {
       }
 
       await this.updateStreakCount(checkIn.habit_id);
-      return data;
+      return data as HabitCheckIn;
     } else {
       // Create new check-in
       const { data, error } = await supabase
@@ -149,7 +157,8 @@ export const habitService = {
         .insert({
           habit_id: checkIn.habit_id,
           date: checkIn.date,
-          status: checkIn.status
+          status: checkIn.status,
+          user_id: userId
         })
         .select()
         .single();
@@ -160,7 +169,7 @@ export const habitService = {
       }
 
       await this.updateStreakCount(checkIn.habit_id);
-      return data;
+      return data as HabitCheckIn;
     }
   },
 
