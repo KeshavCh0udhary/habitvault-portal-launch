@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import * as CheckboxPrimitive from "@radix-ui/react-checkbox"
 import { Check } from "lucide-react"
@@ -25,4 +26,97 @@ const Checkbox = React.forwardRef<
 ))
 Checkbox.displayName = CheckboxPrimitive.Root.displayName
 
-export { Checkbox }
+// Create a CheckboxGroup component
+interface CheckboxGroupProps {
+  value: string[];
+  onValueChange: (value: string[]) => void;
+  children: React.ReactNode;
+  className?: string;
+}
+
+const CheckboxGroup = React.forwardRef<
+  HTMLDivElement,
+  CheckboxGroupProps
+>(({ value, onValueChange, children, className }, ref) => {
+  return (
+    <div ref={ref} className={cn("space-y-2", className)}>
+      {children}
+    </div>
+  );
+});
+CheckboxGroup.displayName = "CheckboxGroup";
+
+interface CheckboxItemProps {
+  value: string;
+  label: string;
+  className?: string;
+}
+
+const CheckboxItem = React.forwardRef<
+  HTMLDivElement,
+  CheckboxItemProps
+>(({ value, label, className }, ref) => {
+  const context = React.useContext(CheckboxGroupContext);
+  
+  if (!context) {
+    console.error("CheckboxItem must be used within a CheckboxGroup");
+    return null;
+  }
+  
+  const { groupValue, onChange } = context;
+  const isChecked = groupValue.includes(value);
+  
+  const handleChange = (checked: boolean) => {
+    let newValue: string[];
+    
+    if (checked) {
+      newValue = [...groupValue, value];
+    } else {
+      newValue = groupValue.filter((item) => item !== value);
+    }
+    
+    onChange(newValue);
+  };
+  
+  return (
+    <div ref={ref} className={cn("flex items-center space-x-2", className)}>
+      <Checkbox
+        id={`checkbox-${value}`}
+        checked={isChecked}
+        onCheckedChange={handleChange}
+      />
+      <label
+        htmlFor={`checkbox-${value}`}
+        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+      >
+        {label}
+      </label>
+    </div>
+  );
+});
+CheckboxItem.displayName = "CheckboxItem";
+
+// Create a context for the CheckboxGroup
+interface CheckboxGroupContextType {
+  groupValue: string[];
+  onChange: (value: string[]) => void;
+}
+
+const CheckboxGroupContext = React.createContext<CheckboxGroupContextType | undefined>(undefined);
+
+// Update the CheckboxGroup component to provide context
+const CheckboxGroupWithContext = React.forwardRef<
+  HTMLDivElement,
+  CheckboxGroupProps
+>(({ value, onValueChange, children, className }, ref) => {
+  return (
+    <CheckboxGroupContext.Provider value={{ groupValue: value, onChange: onValueChange }}>
+      <div ref={ref} className={cn("space-y-2", className)}>
+        {children}
+      </div>
+    </CheckboxGroupContext.Provider>
+  );
+});
+CheckboxGroupWithContext.displayName = "CheckboxGroup";
+
+export { Checkbox, CheckboxGroupWithContext as CheckboxGroup, CheckboxItem }

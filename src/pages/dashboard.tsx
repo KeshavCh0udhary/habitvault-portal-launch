@@ -1,186 +1,140 @@
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/auth-context';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, CheckCircle2, BarChart2, Plus, ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Habit } from '@/types/habit';
+import { habitService } from '@/services/habit-service';
+import { getHabitsDueToday } from '@/utils/habit-utils';
+import HabitList from '@/components/habits/habit-list';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { CalendarDays, ListChecks } from 'lucide-react';
 
-const DashboardPage = () => {
+export default function Dashboard() {
   const { user } = useAuth();
-  const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
-  
+  const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState('today');
+
+  // Fetch all habits
+  const { data: habits, error, isLoading } = useQuery({
+    queryKey: ['habits'],
+    queryFn: habitService.getUserHabits,
+    enabled: !!user,
+  });
+
+  // Refresh habits when coming back to page
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ['habits'] });
+  }, [queryClient]);
+
+  // Handle refresh after check-ins, creating or updating habits
+  const handleHabitsUpdate = () => {
+    queryClient.invalidateQueries({ queryKey: ['habits'] });
+  };
+
+  const habitsDueToday = habits ? getHabitsDueToday(habits) : [];
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="space-y-8">
+        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[1, 2].map((i) => (
+            <Card key={i} className="overflow-hidden">
+              <CardHeader className="pb-2">
+                <Skeleton className="h-5 w-24" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-8 w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <div className="space-y-4">
+          <Skeleton className="h-8 w-48" />
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-48 w-full" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center space-y-2">
+          <h2 className="text-xl font-medium">Error loading habits</h2>
+          <p className="text-muted-foreground">Please try again later.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <h1 className="text-3xl font-bold mb-2">Welcome back, {userName}</h1>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground">
-          Track your habits and build meaningful streaks.
+          Track your progress and build lasting habits
         </p>
-      </motion.div>
-      
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="grid grid-cols-1 md:grid-cols-3 gap-6"
-      >
-        <StatsCard 
-          icon={<Calendar className="size-5" />}
-          title="Active Habits"
-          value="5"
-          trend="+2 this week"
-          trendUp={true}
-        />
-        <StatsCard 
-          icon={<CheckCircle2 className="size-5" />}
-          title="Completion Rate"
-          value="86%"
-          trend="↑ 12% from last week"
-          trendUp={true}
-        />
-        <StatsCard 
-          icon={<BarChart2 className="size-5" />}
-          title="Longest Streak"
-          value="16 days"
-          trend="Meditation"
-          trendUp={false}
-        />
-      </motion.div>
-      
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.3 }}
-        className="mt-6"
-      >
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold">Your Habits</h2>
-          <Button variant="outline" className="gap-2">
-            <Plus className="size-4" />
-            Add Habit
-          </Button>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <HabitCard 
-            title="Morning Meditation"
-            description="10 minutes every day"
-            streak={16}
-            completion={90}
-            color="purple"
+      </div>
+
+      {/* Stats Section */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Total Habits</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{habits?.length || 0}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Due Today</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{habitsDueToday.length}</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Habits Section */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="today" className="flex items-center space-x-2">
+            <CalendarDays className="h-4 w-4" />
+            <span>Today</span>
+          </TabsTrigger>
+          <TabsTrigger value="all" className="flex items-center space-x-2">
+            <ListChecks className="h-4 w-4" />
+            <span>All Habits</span>
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="today">
+          <HabitList
+            habits={habitsDueToday}
+            onUpdate={handleHabitsUpdate}
+            filterDueToday={true}
+            emptyMessage={
+              habits?.length
+                ? "You don't have any habits due today."
+                : "You don't have any habits yet."
+            }
           />
-          <HabitCard 
-            title="Exercise"
-            description="30 minutes, 4 days a week"
-            streak={8}
-            completion={75}
-            color="teal"
+        </TabsContent>
+        <TabsContent value="all">
+          <HabitList
+            habits={habits || []}
+            onUpdate={handleHabitsUpdate}
           />
-          <HabitCard 
-            title="Reading"
-            description="15 pages a day"
-            streak={21}
-            completion={95}
-            color="purple"
-          />
-          <EmptyHabitCard />
-        </div>
-      </motion.div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
-};
-
-interface StatsCardProps {
-  icon: React.ReactNode;
-  title: string;
-  value: string;
-  trend: string;
-  trendUp: boolean;
 }
-
-const StatsCard = ({ icon, title, value, trend, trendUp }: StatsCardProps) => {
-  return (
-    <Card>
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2 text-muted-foreground">
-            {icon}
-            <span className="text-sm font-medium">{title}</span>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-        <p className={`text-xs ${trendUp ? 'text-green-500' : 'text-foreground/70'}`}>
-          {trend}
-        </p>
-      </CardContent>
-    </Card>
-  );
-};
-
-interface HabitCardProps {
-  title: string;
-  description: string;
-  streak: number;
-  completion: number;
-  color: 'purple' | 'teal';
-}
-
-const HabitCard = ({ title, description, streak, completion, color }: HabitCardProps) => {
-  return (
-    <Card className="overflow-hidden">
-      <div className={`h-1 ${color === 'purple' ? 'bg-habit-purple' : 'bg-habit-teal'}`} />
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span>Completion</span>
-            <span className="font-medium">{completion}%</span>
-          </div>
-          <div className="h-2 rounded-full bg-muted overflow-hidden">
-            <div 
-              className={`h-full ${color === 'purple' ? 'bg-habit-purple' : 'bg-habit-teal'}`}
-              style={{ width: `${completion}%` }}
-            />
-          </div>
-        </div>
-      </CardContent>
-      <CardFooter className="border-t border-border pt-4">
-        <div className="flex justify-between w-full items-center">
-          <div className="text-sm">
-            <span className="text-muted-foreground">Current streak:</span>{' '}
-            <span className="font-semibold">{streak} days</span>
-          </div>
-          <Button variant="ghost" size="icon" className="rounded-full">
-            <ArrowRight className="size-4" />
-          </Button>
-        </div>
-      </CardFooter>
-    </Card>
-  );
-};
-
-const EmptyHabitCard = () => {
-  return (
-    <Card className="border-dashed bg-transparent flex flex-col items-center justify-center h-[218px] border-border/50 hover:border-border transition-colors">
-      <div className="p-6 text-center">
-        <div className="size-12 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-          <Plus className="size-6 text-foreground/60" />
-        </div>
-        <h3 className="font-medium mb-1">Add a new habit</h3>
-        <p className="text-sm text-muted-foreground">Start tracking a new daily or weekly habit</p>
-      </div>
-    </Card>
-  );
-};
-
-export default DashboardPage;
