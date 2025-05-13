@@ -18,10 +18,41 @@ interface AuthContextType {
   signOut: () => Promise<void>;
 }
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+// Check if environment variables are defined
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Create a placeholder client for when credentials are missing
+let supabase: SupabaseClient;
+
+try {
+  if (!SUPABASE_URL) {
+    throw new Error('Missing environment variable: VITE_SUPABASE_URL');
+  }
+  
+  if (!SUPABASE_ANON_KEY) {
+    throw new Error('Missing environment variable: VITE_SUPABASE_ANON_KEY');
+  }
+  
+  supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+} catch (error) {
+  console.error('Supabase initialization error:', error);
+  // Create a mock client that will show friendly errors instead of crashing
+  const mockMethods = {
+    from: () => ({ select: () => ({ eq: () => ({ single: () => Promise.reject(error) }) }) }),
+    auth: {
+      getSession: () => Promise.resolve({ data: { session: null }, error }),
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+      signUp: () => Promise.reject(error),
+      signInWithPassword: () => Promise.reject(error),
+      signInWithOAuth: () => Promise.reject(error),
+      signOut: () => Promise.reject(error),
+    },
+  };
+  
+  // @ts-ignore - Creating a mock client
+  supabase = mockMethods;
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -40,9 +71,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         }
         setSession(session);
         setUser(session?.user ?? null);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error getting session:', error);
-        toast.error('Error loading user session');
+        if (error.message?.includes('VITE_SUPABASE')) {
+          toast.error('Supabase credentials are missing. Please configure your environment variables.');
+        } else {
+          toast.error('Error loading user session');
+        }
       } finally {
         setIsLoading(false);
       }
@@ -50,17 +85,22 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
     getSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setIsLoading(false);
-      }
-    );
+    try {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        (_event, session) => {
+          setSession(session);
+          setUser(session?.user ?? null);
+          setIsLoading(false);
+        }
+      );
 
-    return () => {
-      subscription.unsubscribe();
-    };
+      return () => {
+        subscription.unsubscribe();
+      };
+    } catch (error) {
+      console.error('Error setting up auth state change listener:', error);
+      return () => {};
+    }
   }, []);
 
   const signUp = async (email: string, password: string) => {
