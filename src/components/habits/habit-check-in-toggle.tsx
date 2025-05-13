@@ -1,8 +1,9 @@
 
 import { useState, useEffect } from 'react';
 import { format, parseISO } from 'date-fns';
-import { CheckCircle, XCircle, Clock, Calendar } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Calendar, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -23,6 +24,7 @@ export default function HabitCheckInToggle({ habit, date, onUpdate }: HabitCheck
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [showPastCheckInDialog, setShowPastCheckInDialog] = useState(false);
+  const [showSparkles, setShowSparkles] = useState(false);
   
   const dateString = format(date, 'yyyy-MM-dd');
   const isFutureHabit = !canCheckInHabit(habit, date);
@@ -73,7 +75,16 @@ export default function HabitCheckInToggle({ habit, date, onUpdate }: HabitCheck
       });
       
       setCheckInStatus(status);
-      toast.success(`Habit marked as ${status}`);
+      
+      // Show celebration animation and toast for completed habits
+      if (status === 'completed') {
+        setShowSparkles(true);
+        setTimeout(() => setShowSparkles(false), 2000);
+        toast.success('Habit completed! Keep up the great work! 🎉');
+      } else {
+        toast.info(`Habit marked as ${status}`);
+      }
+      
       onUpdate();
     } catch (error) {
       console.error('Error updating check-in:', error);
@@ -114,28 +125,53 @@ export default function HabitCheckInToggle({ habit, date, onUpdate }: HabitCheck
   
   return (
     <div className="flex flex-col items-center justify-center gap-2">
-      <div className="flex items-center justify-center gap-2 w-full">
-        <Button
-          variant={checkInStatus === 'completed' ? 'default' : 'outline'}
-          size="sm"
-          className={`flex-1 ${checkInStatus === 'completed' ? 'bg-green-600 hover:bg-green-700' : ''}`}
-          onClick={() => handleCheckIn('completed')}
-          disabled={updating}
-        >
-          <CheckCircle className="mr-2 h-4 w-4" />
-          Complete
-        </Button>
+      <div className="flex items-center justify-center gap-2 w-full relative">
+        <AnimatePresence>
+          {showSparkles && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 pointer-events-none flex items-center justify-center"
+            >
+              <Sparkles className="text-yellow-400 h-12 w-12 absolute" />
+            </motion.div>
+          )}
+        </AnimatePresence>
         
-        <Button
-          variant={checkInStatus === 'missed' ? 'default' : 'outline'}
-          size="sm"
-          className={`flex-1 ${checkInStatus === 'missed' ? 'bg-red-600 hover:bg-red-700' : ''}`}
-          onClick={() => handleCheckIn('missed')}
-          disabled={updating}
+        <motion.div
+          className="flex-1"
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
         >
-          <XCircle className="mr-2 h-4 w-4" />
-          Skip
-        </Button>
+          <Button
+            variant={checkInStatus === 'completed' ? 'default' : 'outline'}
+            size="sm"
+            className={`w-full ${checkInStatus === 'completed' ? 'bg-green-600 hover:bg-green-700' : ''}`}
+            onClick={() => handleCheckIn('completed')}
+            disabled={updating}
+          >
+            <CheckCircle className="mr-2 h-4 w-4" />
+            Complete
+          </Button>
+        </motion.div>
+        
+        <motion.div
+          className="flex-1"
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
+        >
+          <Button
+            variant={checkInStatus === 'missed' ? 'default' : 'outline'}
+            size="sm"
+            className={`w-full ${checkInStatus === 'missed' ? 'bg-red-600 hover:bg-red-700' : ''}`}
+            onClick={() => handleCheckIn('missed')}
+            disabled={updating}
+          >
+            <XCircle className="mr-2 h-4 w-4" />
+            Skip
+          </Button>
+        </motion.div>
       </div>
       
       <Button 

@@ -9,10 +9,11 @@ import HabitList from '@/components/habits/habit-list';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CalendarDays, ListChecks, Eye, EyeOff } from 'lucide-react';
+import { CalendarDays, ListChecks, Eye, EyeOff, Plus } from 'lucide-react';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import DailyQuote from '@/components/daily-quote';
+import MotivationalGreeting from '@/components/motivational-greeting';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -71,6 +72,10 @@ export default function Dashboard() {
 
   // Filter habits due today, excluding those already completed
   const habitsDueToday = habits ? getHabitsDueToday(habits, completedTodayIds) : [];
+  
+  // Calculate completed habits for motivational message
+  const completedToday = completedTodayIds.length;
+  const totalDueToday = habitsDueToday.length + completedToday;
 
   // Loading state
   if (isLoading) {
@@ -141,6 +146,12 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Motivational Greeting */}
+      <MotivationalGreeting 
+        completedHabits={completedToday}
+        totalHabits={totalDueToday}
+      />
+
       {/* Motivational Quote Section */}
       {showQuote && <DailyQuote onToggle={toggleQuote} />}
 
@@ -184,7 +195,14 @@ export default function Dashboard() {
             emptyMessage={
               habits?.length
                 ? "You don't have any habits due today."
-                : "You don't have any habits yet."
+                : (
+                  <div className="text-center py-8">
+                    <p className="text-lg mb-4">Nothing here yet. Let's build your first habit!</p>
+                    <Button className="bg-habit-purple hover:bg-habit-purple/90">
+                      <Plus className="mr-2 h-4 w-4" /> Add Habit
+                    </Button>
+                  </div>
+                )
             }
           />
         </TabsContent>
@@ -192,6 +210,14 @@ export default function Dashboard() {
           <HabitList
             habits={habits || []}
             onUpdate={handleHabitsUpdate}
+            emptyMessage={
+              <div className="text-center py-8">
+                <p className="text-lg mb-4">Nothing here yet. Let's build your first habit!</p>
+                <Button className="bg-habit-purple hover:bg-habit-purple/90">
+                  <Plus className="mr-2 h-4 w-4" /> Add Habit
+                </Button>
+              </div>
+            }
           />
         </TabsContent>
       </Tabs>

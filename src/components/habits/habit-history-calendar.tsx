@@ -1,9 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import { format, isWithinInterval, subDays, addDays } from 'date-fns';
+import { format, isWithinInterval, subDays, addDays, parseISO } from 'date-fns';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CalendarDays, Calendar as CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -20,12 +20,12 @@ interface CheckIn {
 interface HabitHistoryCalendarProps {
   habits: Habit[];
   checkIns: CheckIn[];
-  view?: 'month' | 'week'; // Added the view prop with an optional flag
+  view?: 'month' | 'week'; // Added the view prop with a type
 }
 
 const HabitHistoryCalendar: React.FC<HabitHistoryCalendarProps> = ({ habits, checkIns, view = 'month' }) => {
   // Using the view prop as the initial state if provided, otherwise defaulting to 'month'
-  const [selectedView, setSelectedView] = useState<'month' | 'week'>(view);
+  const [calendarView, setCalendarView] = useState<'month' | 'week'>(view);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   
   // Create a map of dates to check-in statuses
@@ -105,16 +105,21 @@ const HabitHistoryCalendar: React.FC<HabitHistoryCalendarProps> = ({ habits, che
   const weekRange = getWeekRange();
 
   // Update effect to sync the internal view state with the prop when it changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (view) {
-      setSelectedView(view);
+      setCalendarView(view);
     }
   }, [view]);
+
+  // Save calendar view preference to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem('habitvault-calendar-view', calendarView);
+  }, [calendarView]);
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <Tabs value={selectedView} onValueChange={(v) => setSelectedView(v as 'month' | 'week')}>
+        <Tabs value={calendarView} onValueChange={(v) => setCalendarView(v as 'month' | 'week')}>
           <TabsList>
             <TabsTrigger value="month" className="flex items-center gap-2">
               <CalendarIcon className="h-4 w-4" />
@@ -146,7 +151,7 @@ const HabitHistoryCalendar: React.FC<HabitHistoryCalendarProps> = ({ habits, che
                   partial: 'bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-500',
                   missed: 'bg-red-500/20 hover:bg-red-500/30 text-red-500',
                 }}
-                {... (selectedView === 'week' ? { 
+                {... (calendarView === 'week' ? { 
                   defaultMonth: selectedDate,
                   month: selectedDate,
                   fromDate: weekRange.from,

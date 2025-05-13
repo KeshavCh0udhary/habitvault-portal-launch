@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -525,7 +526,7 @@ export default function AnalyticsPage() {
             </CardHeader>
             <CardContent>
               {dailyCheckIns.length > 0 && dailyCheckIns.some(day => day.completed > 0 || day.missed > 0) ? (
-                <div className="h-[300px]">
+                <div className="h-[300px] max-w-full overflow-hidden">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={dailyCheckIns}

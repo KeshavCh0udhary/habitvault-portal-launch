@@ -6,12 +6,26 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertTriangle } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle,
+  DialogTrigger
+} from '@/components/ui/dialog';
+import { useNavigate } from 'react-router-dom';
 
 const ProfilePage = () => {
+  const navigate = useNavigate();
   const { user, supabase } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     fullName: user?.user_metadata?.full_name || '',
     email: user?.email || '',
@@ -79,6 +93,73 @@ const ProfilePage = () => {
       console.error('Error updating profile:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+  
+  const handleDeleteAccount = async () => {
+    if (!confirmDelete) {
+      toast.error('Please confirm deletion by checking the box');
+      return;
+    }
+    
+    try {
+      setIsDeleting(true);
+      
+      // First, try to delete all user data
+      try {
+        // Delete habits
+        const { error: habitsError } = await supabase
+          .from('habits')
+          .delete()
+          .eq('user_id', user?.id);
+          
+        if (habitsError) console.error('Error deleting habits:', habitsError);
+        
+        // Delete check-ins
+        const { error: checkInsError } = await supabase
+          .from('habit_checkins')
+          .delete()
+          .eq('user_id', user?.id);
+          
+        if (checkInsError) console.error('Error deleting check-ins:', checkInsError);
+      } catch (dataError) {
+        console.error('Error deleting user data:', dataError);
+        // Continue with account deletion even if data deletion fails
+      }
+      
+      // Now delete the user account
+      const { error } = await supabase.auth.admin.deleteUser(user?.id as string);
+      
+      if (error) throw error;
+      
+      // Sign out the user
+      await supabase.auth.signOut();
+      
+      toast.success('Account deleted successfully');
+      setDeleteDialogOpen(false);
+      
+      // Redirect to home page
+      navigate('/');
+      
+    } catch (error: any) {
+      console.error('Delete account error:', error);
+      
+      if (error.message.includes('admin')) {
+        // If admin error occurs, try the fallback method
+        try {
+          // Fallback: Sign out and let the user know
+          await supabase.auth.signOut();
+          toast.success('You have been signed out. Please contact support to complete account deletion.');
+          navigate('/');
+          return;
+        } catch (signOutError) {
+          console.error('Sign out error:', signOutError);
+        }
+      }
+      
+      toast.error(error.message || 'Error deleting account');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -193,7 +274,56 @@ const ProfilePage = () => {
         <p className="text-sm text-muted-foreground mb-4">
           Once you delete your account, there is no going back. Please be certain.
         </p>
-        <Button variant="destructive">Delete Account</Button>
+        
+        <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <DialogTrigger asChild>
+            <Button variant="destructive">Delete Account</Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
+                Delete Account
+              </DialogTitle>
+              <DialogDescription>
+                This action cannot be undone. This will permanently delete your account and remove all your data from our servers.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4 py-4">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="confirm"
+                  checked={confirmDelete}
+                  onChange={(e) => setConfirmDelete(e.target.checked)}
+                  className="rounded border-gray-300 text-habit-purple focus:ring-habit-purple"
+                />
+                <Label htmlFor="confirm" className="text-sm">
+                  I understand that this action is permanent and cannot be undone
+                </Label>
+              </div>
+            </div>
+            
+            <DialogFooter className="sm:justify-between">
+              <Button
+                variant="ghost"
+                onClick={() => setDeleteDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleDeleteAccount}
+                disabled={isDeleting || !confirmDelete}
+                className="gap-2"
+              >
+                {isDeleting && <Loader2 className="h-4 w-4 animate-spin" />}
+                Delete Account
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </motion.div>
     </div>
   );
