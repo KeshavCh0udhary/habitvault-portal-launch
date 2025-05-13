@@ -76,9 +76,7 @@ const Navbar = ({ scrolled }: NavbarProps) => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
-          <Link to="/" className="focus:outline-none">
-            <Logo animated={true} />
-          </Link>
+          <Logo animated={true} />
 
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center space-x-8">
@@ -151,18 +149,11 @@ const Navbar = ({ scrolled }: NavbarProps) => {
                 </DropdownMenu>
               ) : (
                 <>
-                  <Button 
-                    variant="ghost" 
-                    onClick={() => navigate('/login')}
-                    asChild
-                  >
-                    <Link to="/login">Sign In</Link>
+                  <Button variant="ghost" onClick={() => navigate('/login')}>
+                    Sign In
                   </Button>
-                  <Button 
-                    className="bg-habit-purple hover:bg-habit-purple/90"
-                    asChild
-                  >
-                    <Link to="/register">Sign Up</Link>
+                  <Button className="bg-habit-purple hover:bg-habit-purple/90" onClick={() => navigate('/register')}>
+                    Sign Up
                   </Button>
                 </>
               )}
@@ -245,16 +236,12 @@ const Navbar = ({ scrolled }: NavbarProps) => {
                   </>
                 ) : (
                   <>
-                    <Link to="/login" className="w-full">
-                      <Button className="w-full bg-habit-purple hover:bg-habit-purple/90">
-                        Sign In
-                      </Button>
-                    </Link>
-                    <Link to="/register" className="w-full">
-                      <Button variant="outline" className="w-full">
-                        Sign Up
-                      </Button>
-                    </Link>
+                    <Button className="w-full bg-habit-purple hover:bg-habit-purple/90" onClick={() => navigate('/login')}>
+                      Sign In
+                    </Button>
+                    <Button variant="outline" className="w-full" onClick={() => navigate('/register')}>
+                      Sign Up
+                    </Button>
                   </>
                 )}
               </div>

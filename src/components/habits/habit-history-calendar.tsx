@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,8 +24,6 @@ interface HabitHistoryCalendarProps {
   onViewChange?: (view: 'month' | 'week') => void;
 }
 
-const STORAGE_KEY = 'habitHistoryView';
-
 const HabitHistoryCalendar: React.FC<HabitHistoryCalendarProps> = ({ 
   habits, 
   checkIns, 
@@ -38,7 +35,7 @@ const HabitHistoryCalendar: React.FC<HabitHistoryCalendarProps> = ({
 
   // Initialize from localStorage on component mount
   useEffect(() => {
-    const savedView = localStorage.getItem(STORAGE_KEY);
+    const savedView = localStorage.getItem('habitHistoryView');
     if (savedView && (savedView === 'month' || savedView === 'week')) {
       setSelectedView(savedView);
       if (onViewChange) {
@@ -57,7 +54,7 @@ const HabitHistoryCalendar: React.FC<HabitHistoryCalendarProps> = ({
   const handleViewChange = (newView: 'month' | 'week') => {
     setSelectedView(newView);
     // Save to localStorage for persistence
-    localStorage.setItem(STORAGE_KEY, newView);
+    localStorage.setItem('habitHistoryView', newView);
     if (onViewChange) {
       onViewChange(newView);
     }
