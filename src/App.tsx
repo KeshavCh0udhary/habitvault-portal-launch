@@ -20,6 +20,7 @@ import BlogPostPage from "@/pages/blog-post";
 import ContactPage from "@/pages/contact";
 import LoginPage from "@/pages/login";
 import RegisterPage from "@/pages/register";
+import ResetPasswordPage from "@/pages/reset-password";
 import NotFoundPage from "@/pages/NotFound";
 import TermsPage from "@/pages/terms";
 import PrivacyPage from "@/pages/privacy";
@@ -60,6 +61,7 @@ const App = () => (
                   <Route element={<PublicRoute />}>
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
+                    <Route path="/reset-password" element={<ResetPasswordPage />} />
                   </Route>
                 </Route>
                 

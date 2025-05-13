@@ -33,6 +33,19 @@ const HabitHistoryCalendar: React.FC<HabitHistoryCalendarProps> = ({
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedView, setSelectedView] = useState<'month' | 'week'>(view);
 
+  // Initialize from localStorage on component mount
+  useEffect(() => {
+    const savedView = localStorage.getItem('habitHistoryView');
+    if (savedView && (savedView === 'month' || savedView === 'week')) {
+      setSelectedView(savedView);
+      if (onViewChange) {
+        onViewChange(savedView);
+      }
+    } else {
+      setSelectedView(view);
+    }
+  }, []);
+
   // Keep the internal state in sync with the prop
   useEffect(() => {
     setSelectedView(view);
@@ -40,6 +53,8 @@ const HabitHistoryCalendar: React.FC<HabitHistoryCalendarProps> = ({
   
   const handleViewChange = (newView: 'month' | 'week') => {
     setSelectedView(newView);
+    // Save to localStorage for persistence
+    localStorage.setItem('habitHistoryView', newView);
     if (onViewChange) {
       onViewChange(newView);
     }
@@ -97,13 +112,20 @@ const HabitHistoryCalendar: React.FC<HabitHistoryCalendarProps> = ({
     const dateStr = format(selectedDate, 'yyyy-MM-dd');
     const dayCheckIns = checkInMap[dateStr] || {};
     
-    const habitsWithStatus = habits.map(habit => {
-      const status = dayCheckIns[habit.id] || 'none';
-      return {
-        ...habit,
-        status
-      };
-    });
+    // Filter habits to only show those that exist on or before the selected date
+    const habitsWithStatus = habits
+      .filter(habit => {
+        const habitStartDate = new Date(habit.start_date);
+        // Only include habits that were created on or before the selected date
+        return habitStartDate <= selectedDate;
+      })
+      .map(habit => {
+        const status = dayCheckIns[habit.id] || 'none';
+        return {
+          ...habit,
+          status
+        };
+      });
     
     return {
       habitsWithStatus,
@@ -213,7 +235,7 @@ const HabitHistoryCalendar: React.FC<HabitHistoryCalendarProps> = ({
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.2, delay: index * 0.05 }}
                         className={cn(
-                          "p-3 rounded-md border",
+                          "p-3 rounded-md border min-h-[80px] flex flex-col justify-between",
                           habit.status === 'completed' && "border-green-500/30 bg-green-500/10",
                           habit.status === 'missed' && "border-red-500/30 bg-red-500/10",
                           habit.status === 'none' && "border-border bg-muted/30"
@@ -232,6 +254,9 @@ const HabitHistoryCalendar: React.FC<HabitHistoryCalendarProps> = ({
                             {habit.status === 'none' && 'No Check-in'}
                           </span>
                         </div>
+                        {habit.description && (
+                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{habit.description}</p>
+                        )}
                       </motion.div>
                     ))
                   ) : (
