@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
-import { chartAnimation } from '@/lib/utils';
+import { chartAnimate } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 
 interface EnhancedChartContainerProps {
@@ -28,7 +27,7 @@ export const EnhancedChartContainer = ({
   return (
     <motion.div
       className={cn("border rounded-xl overflow-hidden", className)}
-      variants={chartAnimation}
+      variants={chartAnimate}
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.3 }}
