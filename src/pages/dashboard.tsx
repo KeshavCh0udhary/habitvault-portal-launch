@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ReactNode } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/auth-context';
 import { Habit } from '@/types/habit';
@@ -117,6 +117,27 @@ export default function Dashboard() {
     );
   }
 
+  // Define empty state messages as ReactNode elements
+  const todayEmptyMessage: ReactNode = habits?.length ? (
+    "You don't have any habits due today."
+  ) : (
+    <div className="text-center py-8">
+      <p className="text-lg mb-4">Nothing here yet. Let's build your first habit!</p>
+      <Button className="bg-habit-purple hover:bg-habit-purple/90">
+        <Plus className="mr-2 h-4 w-4" /> Add Habit
+      </Button>
+    </div>
+  );
+
+  const allHabitsEmptyMessage: ReactNode = (
+    <div className="text-center py-8">
+      <p className="text-lg mb-4">Nothing here yet. Let's build your first habit!</p>
+      <Button className="bg-habit-purple hover:bg-habit-purple/90">
+        <Plus className="mr-2 h-4 w-4" /> Add Habit
+      </Button>
+    </div>
+  );
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
@@ -192,32 +213,14 @@ export default function Dashboard() {
             habits={habitsDueToday}
             onUpdate={handleHabitsUpdate}
             filterDueToday={true}
-            emptyMessage={
-              habits?.length
-                ? "You don't have any habits due today."
-                : (
-                  <div className="text-center py-8">
-                    <p className="text-lg mb-4">Nothing here yet. Let's build your first habit!</p>
-                    <Button className="bg-habit-purple hover:bg-habit-purple/90">
-                      <Plus className="mr-2 h-4 w-4" /> Add Habit
-                    </Button>
-                  </div>
-                )
-            }
+            emptyMessage={todayEmptyMessage}
           />
         </TabsContent>
         <TabsContent value="all" className="animate-fade-in">
           <HabitList
             habits={habits || []}
             onUpdate={handleHabitsUpdate}
-            emptyMessage={
-              <div className="text-center py-8">
-                <p className="text-lg mb-4">Nothing here yet. Let's build your first habit!</p>
-                <Button className="bg-habit-purple hover:bg-habit-purple/90">
-                  <Plus className="mr-2 h-4 w-4" /> Add Habit
-                </Button>
-              </div>
-            }
+            emptyMessage={allHabitsEmptyMessage}
           />
         </TabsContent>
       </Tabs>

@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, ReactNode } from 'react';
 import { Habit } from '@/types/habit';
 import HabitCard from './habit-card';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,7 @@ interface HabitListProps {
   habits: Habit[];
   onUpdate: () => void;
   filterDueToday?: boolean;
-  emptyMessage?: string;
+  emptyMessage?: ReactNode;
   date?: Date;
 }
 
@@ -46,19 +46,25 @@ export default function HabitList({
           transition={{ duration: 0.5 }}
           className="text-center p-8 bg-muted/30 rounded-lg border border-border/40"
         >
-          <div className="mx-auto w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center mb-4">
-            <Calendar className="h-8 w-8 text-habit-purple" />
-          </div>
-          <h3 className="text-xl font-medium mb-2">Nothing here yet!</h3>
-          <p className="text-muted-foreground mb-6">Let's build your first habit and start your journey.</p>
-          <Button 
-            onClick={() => setIsNewHabitDialogOpen(true)}
-            className="bg-habit-purple hover:bg-habit-purple/90"
-            size="lg"
-          >
-            <Plus className="h-4 w-4 mr-1" />
-            Create Your First Habit
-          </Button>
+          {typeof emptyMessage === 'string' ? (
+            <>
+              <div className="mx-auto w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center mb-4">
+                <Calendar className="h-8 w-8 text-habit-purple" />
+              </div>
+              <h3 className="text-xl font-medium mb-2">Nothing here yet!</h3>
+              <p className="text-muted-foreground mb-6">{emptyMessage}</p>
+              <Button 
+                onClick={() => setIsNewHabitDialogOpen(true)}
+                className="bg-habit-purple hover:bg-habit-purple/90"
+                size="lg"
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Create Your First Habit
+              </Button>
+            </>
+          ) : (
+            emptyMessage
+          )}
         </motion.div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
