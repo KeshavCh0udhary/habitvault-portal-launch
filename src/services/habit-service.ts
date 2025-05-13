@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Habit, NewHabit, HabitCheckIn, HabitCheckInUpdate } from '@/types/habit';
 import { format } from 'date-fns';
@@ -239,5 +238,23 @@ export const habitService = {
         updated_at: new Date().toISOString()
       })
       .eq('id', habitId);
+  },
+
+  async getAllCheckIns() {
+    try {
+      const { user } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not authenticated");
+
+      const { data, error } = await supabase
+        .from('habit_checkins')
+        .select('*')
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error("Error fetching all check-ins:", error);
+      return [];
+    }
   }
 };

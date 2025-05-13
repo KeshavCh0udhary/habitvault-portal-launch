@@ -1,10 +1,45 @@
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Link } from 'react-router-dom';
+import { blogPosts } from '@/data/blog-posts';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Search } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const BlogsPage = () => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredPosts, setFilteredPosts] = useState(blogPosts);
+  const [activeCategory, setActiveCategory] = useState('All');
+
+  // Get unique categories
+  const categories = ['All', ...Array.from(new Set(blogPosts.map(post => post.category)))];
+
+  // Filter posts when search or category changes
+  useEffect(() => {
+    let result = blogPosts;
+    
+    // Apply category filter if not "All"
+    if (activeCategory !== 'All') {
+      result = result.filter(post => post.category === activeCategory);
+    }
+    
+    // Apply search filter if there's a search term
+    if (searchTerm) {
+      const lowerSearchTerm = searchTerm.toLowerCase();
+      result = result.filter(post => 
+        post.title.toLowerCase().includes(lowerSearchTerm) ||
+        post.excerpt.toLowerCase().includes(lowerSearchTerm) ||
+        post.category.toLowerCase().includes(lowerSearchTerm)
+      );
+    }
+    
+    setFilteredPosts(result);
+  }, [searchTerm, activeCategory]);
+
   return (
     <div className="py-24">
       <div className="container px-4 max-w-5xl mx-auto">
@@ -12,118 +47,74 @@ const BlogsPage = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="text-center mb-16"
+          className="text-center mb-12"
         >
           <h1 className="text-4xl font-bold mb-6">HabitVault Blog</h1>
-          <p className="text-xl text-foreground/70 max-w-2xl mx-auto">
+          <p className="text-xl text-foreground/70 max-w-2xl mx-auto mb-8">
             Insights, tips, and stories about building better habits and achieving your goals
           </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input 
+                placeholder="Search articles..." 
+                className="pl-10"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
+          
+          <div className="flex flex-wrap gap-2 justify-center mt-6">
+            {categories.map(category => (
+              <Button
+                key={category}
+                variant={activeCategory === category ? "default" : "outline"}
+                size="sm"
+                onClick={() => setActiveCategory(category)}
+                className={cn(
+                  "transition-all",
+                  activeCategory === category && "bg-habit-purple hover:bg-habit-purple/90"
+                )}
+              >
+                {category}
+              </Button>
+            ))}
+          </div>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {blogPosts.map((post, index) => (
-            <BlogCard
-              key={post.id}
-              post={post}
-              index={index}
-            />
-          ))}
+          {filteredPosts.length > 0 ? (
+            filteredPosts.map((post, index) => (
+              <BlogCard
+                key={post.id}
+                post={post}
+                index={index}
+              />
+            ))
+          ) : (
+            <div className="col-span-1 md:col-span-2 lg:col-span-3 py-12 text-center">
+              <p className="text-lg text-muted-foreground">No articles found matching your criteria.</p>
+              <Button 
+                variant="link" 
+                onClick={() => { 
+                  setSearchTerm('');
+                  setActiveCategory('All');
+                }}
+              >
+                Clear filters
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 };
 
-interface BlogPost {
-  id: number;
-  title: string;
-  excerpt: string;
-  date: string;
-  author: {
-    name: string;
-    avatar: string;
-  };
-  category: string;
-  image: string;
-}
-
-const blogPosts: BlogPost[] = [
-  {
-    id: 1,
-    title: "The Science Behind Habit Formation",
-    excerpt: "Discover the neuroscience of how habits form and why visual tracking is so effective.",
-    date: "May 10, 2025",
-    author: {
-      name: "Dr. Alex Johnson",
-      avatar: "",
-    },
-    category: "Science",
-    image: "",
-  },
-  {
-    id: 2,
-    title: "5 Morning Habits That Boost Productivity",
-    excerpt: "Learn which morning habits can set you up for a successful and productive day.",
-    date: "May 8, 2025",
-    author: {
-      name: "Maria Santos",
-      avatar: "",
-    },
-    category: "Productivity",
-    image: "",
-  },
-  {
-    id: 3,
-    title: "How to Build a Meditation Habit That Sticks",
-    excerpt: "A step-by-step guide to incorporating meditation into your daily routine.",
-    date: "May 5, 2025",
-    author: {
-      name: "David Chen",
-      avatar: "",
-    },
-    category: "Wellness",
-    image: "",
-  },
-  {
-    id: 4,
-    title: "Breaking Bad Habits: A Strategic Approach",
-    excerpt: "Effective strategies for identifying and breaking habits that don't serve you.",
-    date: "May 3, 2025",
-    author: {
-      name: "Lisa Williams",
-      avatar: "",
-    },
-    category: "Self-improvement",
-    image: "",
-  },
-  {
-    id: 5,
-    title: "The Power of Habit Stacking for Behavior Change",
-    excerpt: "How to use the habit stacking technique to build multiple good habits at once.",
-    date: "April 30, 2025",
-    author: {
-      name: "James Taylor",
-      avatar: "",
-    },
-    category: "Productivity",
-    image: "",
-  },
-  {
-    id: 6,
-    title: "Visual Habit Tracking: Why It Works So Well",
-    excerpt: "The psychological benefits of seeing your progress visually represented.",
-    date: "April 25, 2025",
-    author: {
-      name: "Dr. Sarah Parker",
-      avatar: "",
-    },
-    category: "Psychology",
-    image: "",
-  },
-];
-
 interface BlogCardProps {
-  post: BlogPost;
+  post: typeof blogPosts[0];
   index: number;
 }
 

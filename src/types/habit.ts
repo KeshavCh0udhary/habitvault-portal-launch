@@ -1,38 +1,27 @@
-
-export type TargetDay = 'daily' | 'weekdays' | 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
-
 export interface Habit {
   id: string;
-  user_id: string;
   name: string;
-  description: string | null;
+  description: string;
+  frequency: 'daily' | 'weekly' | 'monthly';
+  days_of_week?: string[];
+  day_of_month?: number;
+  time_of_day?: string;
+  category?: string;
   start_date: string;
-  target_days: TargetDay[];
-  current_streak: number;
-  longest_streak: number;
-  created_at: string;
-  updated_at: string;
+  end_date?: string;
+  user_id: string;
+  created_at?: string;
+  updated_at?: string;
+  current_streak?: number;
+  longest_streak?: number;
 }
 
-export interface HabitCheckIn {
+export interface CheckIn {
   id: string;
   habit_id: string;
-  user_id: string;
   date: string;
-  status: 'completed' | 'missed';
+  status: 'completed' | 'missed' | 'skipped';
   created_at: string;
-  updated_at: string;
-}
-
-export interface NewHabit {
-  name: string;
-  description?: string;
-  start_date?: string;
-  target_days: TargetDay[];
-}
-
-export interface HabitCheckInUpdate {
-  habit_id: string;
-  date: string;
-  status: 'completed' | 'missed';
+  updated_at?: string;
+  user_id: string;
 }

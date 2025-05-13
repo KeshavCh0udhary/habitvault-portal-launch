@@ -5,14 +5,15 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { blogPosts } from '@/data/blog-posts';
 
 const BlogPostPage = () => {
   const { id } = useParams<{ id: string }>();
-
-  // In a real app, you would fetch the blog post data based on the ID
-  // For now, we'll use dummy content
-  const post = {
-    id: Number(id),
+  const postId = Number(id);
+  
+  // Find the post in our blog posts data
+  const post = blogPosts.find(p => p.id === postId) || {
+    id: postId,
     title: "The Science Behind Habit Formation",
     content: `
       <p>Building new habits is a fundamental part of personal growth and development. But what exactly happens in our brains when we form new habits?</p>
@@ -112,9 +113,12 @@ const BlogPostPage = () => {
             </div>
           </div>
 
-          <div 
+          <motion.div 
             className="prose prose-lg dark:prose-invert max-w-none"
             dangerouslySetInnerHTML={{ __html: post.content }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
           />
         </motion.article>
       </div>
