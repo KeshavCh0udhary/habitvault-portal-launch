@@ -17,6 +17,7 @@ import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import HabitHistoryCalendar from '@/components/habits/habit-history-calendar';
 import { getMissingCheckIns } from '@/utils/habit-utils';
+import { useAuth } from '@/hooks/use-auth';
 
 // Chart colors
 const COLORS = ['#10b981', '#f43f5e', '#f59e0b', '#8b5cf6', '#06b6d4', '#ec4899'];
@@ -42,7 +43,10 @@ const getDateRange = (timeRange: string) => {
     case "90days":
       return { start: addDays(today, -90), end: today };
     case "thisMonth":
-      return { start: startOfMonth(today), end: endOfMonth(today) };
+      return { 
+        start: startOfMonth(today), 
+        end: today
+      };
     case "lastMonth":
       const lastMonth = subMonths(today, 1);
       return { start: startOfMonth(lastMonth), end: endOfMonth(lastMonth) };
@@ -92,9 +96,11 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label })
 };
 
 export default function AnalyticsPage() {
+  const { user } = useAuth();
   const [habits, setHabits] = useState<Habit[]>([]);
   const [checkIns, setCheckIns] = useState<CheckIn[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [lastUpdate, setLastUpdate] = useState(Date.now());
   const [selectedTimeRange, setSelectedTimeRange] = useState(() => {
     return localStorage.getItem('habitvault-analytics-range') || "30days";
@@ -124,7 +130,13 @@ export default function AnalyticsPage() {
 
   // Function to refresh data
   const refreshData = React.useCallback(async () => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+    
     try {
+      setError(null);
       const habitsData = await habitService.getUserHabits();
       const checkInsData = await habitService.getAllCheckIns();
       
@@ -136,28 +148,27 @@ export default function AnalyticsPage() {
       setLastUpdate(Date.now());
     } catch (error) {
       console.error("Error fetching data:", error);
+      setError("Failed to load analytics data. Please try again later.");
+    } finally {
+      setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   // Initial data fetch
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      await refreshData();
-      setLoading(false);
-    };
-    
-    fetchData();
+    refreshData();
   }, [refreshData]);
 
   // Set up polling for updates
   useEffect(() => {
+    if (!user) return;
+    
     // Poll every 5 seconds for updates
     const interval = setInterval(refreshData, 5000);
     
     // Cleanup interval on unmount
     return () => clearInterval(interval);
-  }, [refreshData]);
+  }, [refreshData, user]);
   
   // Calculate date range
   const dateRange = React.useMemo(() => getDateRange(selectedTimeRange), [selectedTimeRange]);
@@ -198,6 +209,11 @@ export default function AnalyticsPage() {
       const dateStr = format(day, 'yyyy-MM-dd');
       checkInsByDate[dateStr] = { completed: 0, missed: 0 };
       
+      // Skip future dates
+      if (day > new Date()) {
+        return;
+      }
+      
       // For each habit that existed on this day, we should have a check-in
       filteredHabits.forEach(habit => {
         const habitStartDate = parseISO(habit.start_date);
@@ -230,6 +246,11 @@ export default function AnalyticsPage() {
       const weekData: Record<string, { completed: number; missed: number; date: string }> = {};
       
       daysInRange.forEach(day => {
+        // Skip future dates
+        if (day > new Date()) {
+          return;
+        }
+        
         const weekStart = format(startOfWeek(day), 'MMM d');
         
         if (!weekData[weekStart]) {
@@ -245,20 +266,40 @@ export default function AnalyticsPage() {
       return Object.values(weekData);
     } else {
       // Use daily data
-      return daysInRange.map(day => {
-        const dateStr = format(day, 'yyyy-MM-dd');
-        const dayDisplay = format(day, 'MMM d');
-        
-        return {
-          date: dayDisplay,
-          completed: checkInsByDate[dateStr].completed,
-          missed: checkInsByDate[dateStr].missed
-        };
-      });
+      return daysInRange
+        .filter(day => day <= new Date()) // Only include days up to today
+        .map(day => {
+          const dateStr = format(day, 'yyyy-MM-dd');
+          const dayDisplay = format(day, 'MMM d');
+          
+          return {
+            date: dayDisplay,
+            completed: checkInsByDate[dateStr].completed,
+            missed: checkInsByDate[dateStr].missed
+          };
+        });
     }
   }, [checkIns, habits, dateRange.start, dateRange.end, selectedHabit]);
 
   const renderBarChart = () => {
+    if (loading) {
+      return (
+        <div className="h-[300px] flex items-center justify-center">
+          <Skeleton className="w-full h-full" />
+        </div>
+      );
+    }
+
+    if (!user) {
+      return (
+        <div className="h-[300px] flex items-center justify-center">
+          <div className="text-center text-muted-foreground">
+            <p>Please log in to view your analytics.</p>
+          </div>
+        </div>
+      );
+    }
+
     if (!dailyCheckIns || dailyCheckIns.length === 0) {
       return (
         <div className="h-[300px] flex items-center justify-center">
@@ -322,14 +363,18 @@ export default function AnalyticsPage() {
       };
     }
     
-    const totalDaysInRange = differenceInDays(dateRange.end, dateRange.start) + 1;
+    const today = new Date();
+    // Ensure we don't count beyond today
+    const endDate = dateRange.end > today ? today : dateRange.end;
+    
+    const totalDaysInRange = differenceInDays(endDate, dateRange.start) + 1;
     
     // Create a map of potential check-ins for each day and habit
     let potentialCheckIns = 0;
     let habitStatsByDay: Record<string, string[]> = {};
     
     // Prepare a day-by-day record of habits that were due
-    const daysInRange = eachDayOfInterval({ start: dateRange.start, end: dateRange.end });
+    const daysInRange = eachDayOfInterval({ start: dateRange.start, end: endDate });
     
     // Prepare all habit stats
     daysInRange.forEach(day => {
@@ -350,9 +395,15 @@ export default function AnalyticsPage() {
       });
     });
     
-    const completedCheckIns = dailyCheckIns.filter(c => c.completed > 0).length;
-    const missedCheckIns = dailyCheckIns.filter(c => c.missed > 0).length;
-    const skippedCheckIns = dailyCheckIns.filter(c => c.completed === 0 && c.missed === 0).length;
+    // Filter check-ins to only include those up to today
+    const relevantCheckIns = dailyCheckIns.filter(day => {
+      const checkInDate = parseISO(format(new Date(day.date), 'yyyy-MM-dd'));
+      return checkInDate <= today;
+    });
+    
+    const completedCheckIns = relevantCheckIns.filter(c => c.completed > 0).length;
+    const missedCheckIns = relevantCheckIns.filter(c => c.missed > 0).length;
+    const skippedCheckIns = relevantCheckIns.filter(c => c.completed === 0 && c.missed === 0).length;
     
     // If we have no potential check-ins, return 0 to avoid division by zero
     if (potentialCheckIns === 0) {
@@ -383,12 +434,16 @@ export default function AnalyticsPage() {
       return [];
     }
 
+    const today = new Date();
+    // Ensure we don't count beyond today
+    const endDate = dateRange.end > today ? today : dateRange.end;
+
     // Only count check-ins within the selected date range
     const filteredCheckIns = checkIns.filter(checkIn => {
       const checkInDate = parseISO(checkIn.date);
       return isWithinInterval(checkInDate, { 
         start: dateRange.start, 
-        end: dateRange.end 
+        end: endDate 
       });
     });
 
@@ -396,7 +451,7 @@ export default function AnalyticsPage() {
     const activeHabits = habits.filter(habit => {
       const habitStartDate = parseISO(habit.start_date);
       // Include habit if its start date is before or within the selected period
-      return habitStartDate <= dateRange.end;
+      return habitStartDate <= endDate;
     });
 
     // If no active habits in the selected period, return empty array
@@ -491,36 +546,52 @@ export default function AnalyticsPage() {
     .sort((a, b) => b.completions - a.completions); // Sort by highest completions first
   }, [dailyCheckIns, habits, lastUpdate]);
 
-  // Show loading state if data is still being fetched
   if (loading) {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">Analytics</h1>
+          <Skeleton className="h-8 w-32" />
+          <Skeleton className="h-10 w-32" />
         </div>
-        
-        <div className="grid gap-6 md:grid-cols-3">
-          <Skeleton className="h-32" />
-          <Skeleton className="h-32" />
-          <Skeleton className="h-32" />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i}>
+              <CardHeader className="pb-2">
+                <Skeleton className="h-4 w-32" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-8 w-16" />
+              </CardContent>
+            </Card>
+          ))}
         </div>
-        
-        <Skeleton className="h-96" />
+        <Skeleton className="h-[400px]" />
       </div>
     );
   }
-  
-  // If no habits exist yet, show an info message
-  if (habits.length === 0) {
+
+  if (error) {
     return (
       <div className="space-y-6">
         <h1 className="text-3xl font-bold">Analytics</h1>
-        
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-3xl font-bold">Analytics</h1>
         <Alert>
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>No habits found</AlertTitle>
+          <AlertTitle>Authentication required</AlertTitle>
           <AlertDescription>
-            Create some habits and check them in to see your analytics data.
+            Please log in to view your analytics data.
           </AlertDescription>
         </Alert>
       </div>
@@ -547,9 +618,9 @@ export default function AnalyticsPage() {
           </Select>
         </div>
       </div>
-      
+
       {/* Stats cards */}
-      <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-medium">Total Habits</CardTitle>
