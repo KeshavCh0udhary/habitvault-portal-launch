@@ -139,7 +139,7 @@ const HomePage = () => {
   
   return (
     <div className="min-h-screen">
-      {/* Redesigned Hero Section with two-column layout */}
+      {/* Redesigned Hero Section with centered two-column layout */}
       <EnhancedCursorGradient 
         className="min-h-screen flex items-center pt-16 relative overflow-hidden" 
         intensity="high"
@@ -206,10 +206,10 @@ const HomePage = () => {
           }}
         />
         
-        <div ref={heroRef} className="container px-4 mx-auto relative z-10">
-          {/* Two-column layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            {/* Left column: Content */}
+        <div ref={heroRef} className="container max-w-7xl mx-auto px-6 relative z-10">
+          {/* Two-column layout with improved centering */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+            {/* Left column: Content - adjusted for better balance */}
             <motion.div 
               className="lg:col-span-6"
               style={{ 
@@ -224,7 +224,7 @@ const HomePage = () => {
                   duration: 0.8, 
                   ease: [0.22, 1, 0.36, 1],
                 }}
-                className="mb-6"
+                className="mb-6 max-w-lg lg:max-w-xl mx-auto lg:mx-0"
               >
                 <div className="flex items-center gap-3 mb-6">
                   <motion.div
@@ -260,7 +260,7 @@ const HomePage = () => {
                 
                 {/* Animated subheadline with staggered reveal */}
                 <motion.p 
-                  className="text-xl md:text-2xl text-foreground/80 max-w-2xl leading-relaxed"
+                  className="text-xl md:text-2xl text-foreground/80 max-w-xl leading-relaxed"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: heroInView ? 1 : 0, y: heroInView ? 0 : 20 }}
                   transition={{ duration: 0.6, delay: 0.7 }}
@@ -278,9 +278,10 @@ const HomePage = () => {
                   <motion.div
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.98 }}
+                    className="w-full sm:w-auto"
                   >
                     <Button 
-                      className="group bg-habit-purple hover:bg-habit-purple/90 rounded-full h-14 px-8 text-lg relative overflow-hidden w-full sm:w-auto"
+                      className="group bg-habit-purple hover:bg-habit-purple/90 rounded-full h-14 px-8 text-lg relative overflow-hidden w-full"
                       onClick={() => navigate('/register')}
                     >
                       <motion.span 
@@ -299,10 +300,11 @@ const HomePage = () => {
                   <motion.div
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.98 }}
+                    className="w-full sm:w-auto"
                   >
                     <Button 
                       variant="outline"
-                      className="rounded-full h-14 px-8 text-lg border-2 hover:bg-background/5 w-full sm:w-auto flex items-center"
+                      className="rounded-full h-14 px-8 text-lg border-2 hover:bg-background/5 w-full flex items-center justify-center"
                       onClick={() => {
                         const featuresElement = featuresRef.current;
                         if (featuresElement) {
@@ -369,7 +371,7 @@ const HomePage = () => {
               </motion.div>
             </motion.div>
             
-            {/* Right column: Animated illustration */}
+            {/* Right column: Animated illustration - adjusted for better balance */}
             <motion.div 
               className="lg:col-span-6"
               style={{ 
@@ -381,7 +383,7 @@ const HomePage = () => {
               onMouseMove={handleMouseMove}
             >
               <motion.div 
-                className="relative mx-auto"
+                className="relative max-w-xl mx-auto lg:mx-0 lg:ml-auto"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: heroInView ? 1 : 0, y: heroInView ? 0 : 30 }}
                 transition={{ duration: 0.8, delay: 0.6 }}
