@@ -1,73 +1,115 @@
-# Welcome to your Lovable project
+# HabitVault - Your Personal Habit Tracking Portal
 
-## Project info
+[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black.svg?style=flat-square&logo=vercel)](https://habitvault-portal-launch.vercel.app/)
 
-**URL**: https://lovable.dev/projects/5c794538-f075-4b36-ac90-90ab2dfd3365
+HabitVault is a modern, user-friendly web application designed to help you build and maintain positive habits. Track your daily progress, visualize your journey, and stay motivated with personalized insights.
 
-## How can I edit this code?
+## 🌟 Features
 
-There are several ways of editing your application.
+- **Intuitive Dashboard**: Clean and organized view of your daily habits and progress
+- **Smart Habit Tracking**: Track habits with flexible scheduling options (daily, weekly, custom)
+- **Visual Analytics**: Comprehensive analytics to visualize your habit completion rates and trends
+- **Motivational Elements**: Daily quotes and personalized greetings to keep you motivated
+- **Responsive Design**: Seamless experience across desktop and mobile devices
 
-**Use Lovable**
+## 🚀 Live Demo
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/5c794538-f075-4b36-ac90-90ab2dfd3365) and start prompting.
+Visit the live application: [HabitVault Portal](https://habitvault-portal-launch.vercel.app/)
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🛠️ Tech Stack
 
-**Use your preferred IDE**
+- **Frontend Framework**: React with TypeScript
+- **Styling**: TailwindCSS + ShadcnUI
+- **State Management**: TanStack Query (React Query)
+- **Backend & Authentication**: Supabase
+- **Build Tool**: Vite
+- **Deployment**: Vercel
+- **Date Handling**: date-fns
+- **Icons**: Lucide React
+- **UI Components**: Radix UI
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 🏗️ Project Structure
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```
+habitvault-portal/
+├── src/
+│   ├── components/         # Reusable UI components
+│   │   ├── habits/        # Habit-specific components
+│   │   └── ui/           # Generic UI components
+│   ├── pages/            # Application pages/routes
+│   ├── hooks/            # Custom React hooks
+│   ├── services/         # API and service layer
+│   ├── types/            # TypeScript type definitions
+│   └── utils/            # Utility functions
+├── public/              # Static assets
+└── ...config files     # Various configuration files
 ```
 
-**Edit a file directly in GitHub**
+## 🚀 Getting Started
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/habitvault-portal.git
+   ```
 
-**Use GitHub Codespaces**
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+3. Set up environment variables:
+   Create a `.env` file with:
+   ```
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
 
-## What technologies are used for this project?
+4. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
-This project is built with:
+## 📱 Key Features Explained
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### Dashboard
+- Quick overview of all habits
+- Today's habits with completion tracking
+- Motivational quotes and progress insights
+- Easy habit creation and management
 
-## How can I deploy this project?
+### Analytics
+- Habit completion trends
+- Success rate visualization
+- Historical data analysis
+- Custom date range filtering
 
-Simply open [Lovable](https://lovable.dev/projects/5c794538-f075-4b36-ac90-90ab2dfd3365) and click on Share -> Publish.
+### Habit Management
+- Create and edit habits
+- Set custom schedules
+- Track completion history
+- Add notes and reflections
 
-## Can I connect a custom domain to my Lovable project?
+## 🔐 Security
 
-Yes, you can!
+- Secure authentication via Supabase
+- Protected API routes
+- Environment variable protection
+- Secure data storage
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## 🤝 Contributing
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🙏 Acknowledgments
+
+- [Shadcn UI](https://ui.shadcn.com/) for beautiful UI components
+- [Supabase](https://supabase.com/) for backend services
+- [Vercel](https://vercel.com/) for hosting and deployment
+
+---
+
+Built with ❤️ using React, TypeScript, and Supabase
