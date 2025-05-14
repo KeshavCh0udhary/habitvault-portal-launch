@@ -144,6 +144,10 @@ export default {
 						opacity: "1",
 						background: "radial-gradient(600px circle at var(--mouse-x) var(--mouse-y), rgba(108, 93, 211, 0.25), transparent 40%)"
 					}
+				},
+				"blink": {
+					"0%, 100%": { borderColor: "transparent" },
+					"50%": { borderColor: "currentColor" }
 				}
 			},
 			animation: {
@@ -156,7 +160,8 @@ export default {
 				"scale-in": "scale-in 0.3s ease-out",
 				"float": "float 6s ease-in-out infinite",
 				"ping-slow": "ping-slow 2s cubic-bezier(0, 0, 0.2, 1) infinite",
-				"cursor-gradient": "cursor-gradient 4s ease infinite"
+				"cursor-gradient": "cursor-gradient 4s ease infinite",
+				"blink": "blink 0.75s step-end infinite"
 			}
 		}
 	},

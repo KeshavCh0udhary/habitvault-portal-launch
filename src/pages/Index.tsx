@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform, useInView, useMotionValueEvent, useSpring, useMotionValue, useAnimate } from 'framer-motion';
@@ -116,79 +117,75 @@ const HomePage = () => {
   
   // Animation sequence for headline typing effect
   const [headlineScope, animateHeadline] = useAnimate();
-  const headlineText = "Build Habits That Stick.";
+  const headlineText = "Build Better Habits, Every Day.";
   
   useEffect(() => {
     if (heroInView) {
-      animateHeadline(
-        headlineScope.current, 
-        { opacity: 1 }, 
-        { duration: 0.3 }
-      );
+      const sequence = [
+        [headlineScope.current, { opacity: 1 }, { duration: 0.3 }],
+        [
+          headlineScope.current,
+          { "--content": `"${headlineText}"`, "--width": "100%" } as any,
+          { duration: 2, ease: "easeOut" }
+        ]
+      ];
       
-      animateHeadline(
-        headlineScope.current,
-        { 
-          "--content": `"${headlineText}"`,
-          "--width": "100%" 
-        } as any, 
-        { duration: 2, ease: "easeOut" }
-      );
+      animateHeadline(sequence);
     }
   }, [heroInView, animateHeadline]);
   
   return (
     <div className="min-h-screen">
-      {/* Redesigned Hero Section with centered two-column layout */}
+      {/* Completely redesigned hero section with perfect balance */}
       <EnhancedCursorGradient 
-        className="min-h-screen flex items-center pt-16 relative overflow-hidden" 
+        className="min-h-screen flex items-center justify-center pt-10 md:pt-16 relative overflow-hidden" 
         intensity="high"
         particleCount={40}
       >
-        {/* Enhanced animated background blobs with more dramatic effect */}
+        {/* Improved background blobs with better positioning */}
         <motion.div 
-          className="hero-blob hero-blob-1"
+          className="absolute top-1/3 -left-32 w-[600px] h-[600px] rounded-full"
           style={{ 
             x: blobX1, 
             y: blobY1,
-            filter: "blur(60px)",
+            filter: "blur(120px)",
             opacity: 0.25,
             background: "linear-gradient(120deg, #6C5DD3, #8B5CF6)"
           }}
           animate={{ 
             scale: [1, 1.2, 1],
-            filter: ["blur(60px)", "blur(80px)", "blur(60px)"]
+            filter: ["blur(120px)", "blur(150px)", "blur(120px)"]
           }}
           transition={{ 
             repeat: Infinity, 
-            duration: 15,
+            duration: 18,
             ease: "easeInOut"
           }}
         />
         <motion.div 
-          className="hero-blob hero-blob-2"
+          className="absolute bottom-1/4 -right-32 w-[500px] h-[500px] rounded-full"
           style={{ 
             x: blobX2, 
             y: blobY2,
-            filter: "blur(70px)",
+            filter: "blur(130px)",
             opacity: 0.2,
             background: "linear-gradient(120deg, #41D0C7, #0EA5E9)"
           }}
           animate={{ 
             scale: [1, 1.3, 1],
-            filter: ["blur(70px)", "blur(90px)", "blur(70px)"]
+            filter: ["blur(130px)", "blur(160px)", "blur(130px)"]
           }}
           transition={{ 
             repeat: Infinity, 
-            duration: 18,
+            duration: 20,
             ease: "easeInOut",
             delay: 1
           }}
         />
         <motion.div 
-          className="hero-blob hero-blob-3"
+          className="absolute bottom-1/2 left-1/3 w-[400px] h-[400px] rounded-full"
           style={{
-            filter: "blur(50px)",
+            filter: "blur(100px)",
             opacity: 0.15,
             background: "linear-gradient(120deg, #D946EF, #6C5DD3)"
           }}
@@ -196,22 +193,22 @@ const HomePage = () => {
             scale: [1, 1.1, 1],
             x: [0, 30, 0],
             y: [0, -20, 0],
-            filter: ["blur(50px)", "blur(70px)", "blur(50px)"]
+            filter: ["blur(100px)", "blur(120px)", "blur(100px)"]
           }}
           transition={{ 
             repeat: Infinity, 
-            duration: 20,
+            duration: 22,
             ease: "easeInOut",
             delay: 2
           }}
         />
         
-        <div ref={heroRef} className="container max-w-7xl mx-auto px-6 relative z-10">
-          {/* Two-column layout with improved centering */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-            {/* Left column: Content - adjusted for better balance */}
+        <div ref={heroRef} className="container max-w-7xl mx-auto px-4 md:px-8 relative z-10">
+          {/* Perfectly balanced two-column layout with proper spacing */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+            {/* Left column: Enhanced content with better visual hierarchy */}
             <motion.div 
-              className="lg:col-span-6"
+              className="flex flex-col items-center lg:items-start text-center lg:text-left"
               style={{ 
                 opacity: opacityHero, 
                 y: yHero,
@@ -224,9 +221,9 @@ const HomePage = () => {
                   duration: 0.8, 
                   ease: [0.22, 1, 0.36, 1],
                 }}
-                className="mb-6 max-w-lg lg:max-w-xl mx-auto lg:mx-0"
+                className="mb-8 w-full max-w-xl"
               >
-                <div className="flex items-center gap-3 mb-6">
+                <div className="flex justify-center lg:justify-start items-center mb-8">
                   <motion.div
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: heroInView ? 1 : 0, scale: heroInView ? 1 : 0.8 }}
@@ -235,53 +232,54 @@ const HomePage = () => {
                       ease: [0.22, 1, 0.36, 1],
                       delay: 0.1 
                     }}
-                    className="mx-auto lg:mx-0"
                     whileHover={{ 
                       rotate: [0, -5, 5, 0], 
                       transition: { duration: 0.5 }
                     }}
                   >
-                    <Logo variant="large" showText />
+                    <Logo variant="large" showText className="w-auto h-12" />
                   </motion.div>
                 </div>
                 
-                {/* Animated Headline with typing effect */}
+                {/* Animated headline with improved typography and visual styling */}
                 <motion.h1 
                   ref={headlineScope}
-                  className="text-5xl md:text-7xl font-bold leading-tight tracking-tight mb-4 relative after:content-[var(--content)] after:absolute after:left-0 after:top-0 after:w-[var(--width)] after:whitespace-nowrap after:overflow-hidden after:border-r-[3px] after:border-solid after:animate-[blink_0.75s_step-end_infinite]"
+                  className="text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.1] tracking-tight mb-6 relative overflow-hidden after:absolute after:left-0 after:top-0 after:content-[var(--content)] after:w-[var(--width)] after:whitespace-nowrap after:overflow-hidden after:border-r-4 after:border-habit-purple after:animate-[blink_0.75s_step-end_infinite]"
                   initial={{ opacity: 0 }}
                   style={{
                     "--content": `""`,
                     "--width": "0%"
                   } as any}
                 >
-                  <span className="text-gradient inline-block">Build Habits That Stick.</span>
+                  <span className="bg-gradient-to-r from-habit-purple via-habit-purple-500 to-habit-teal bg-clip-text text-transparent">
+                    Build Better Habits, Every Day.
+                  </span>
                 </motion.h1>
                 
-                {/* Animated subheadline with staggered reveal */}
+                {/* Enhanced subheading with clearer value proposition */}
                 <motion.p 
-                  className="text-xl md:text-2xl text-foreground/80 max-w-xl leading-relaxed"
+                  className="text-xl md:text-2xl text-foreground/80 leading-relaxed mb-10"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: heroInView ? 1 : 0, y: heroInView ? 0 : 20 }}
                   transition={{ duration: 0.6, delay: 0.7 }}
                 >
-                  Track your daily routines, visualize your progress, and stay consistent with HabitVault's powerful habit-building system.
+                  Stay consistent, visualize your streaks, and reach your goals faster with HabitVault's powerful tracking system.
                 </motion.p>
                 
-                {/* Enhanced CTA buttons with animations */}
+                {/* Enhanced CTA buttons with better visual hierarchy and effects */}
                 <motion.div 
-                  className="flex flex-col sm:flex-row items-center sm:items-start gap-5 mt-8"
+                  className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-5"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: heroInView ? 1 : 0, y: heroInView ? 0 : 20 }}
                   transition={{ duration: 0.6, delay: 0.9 }}
                 >
                   <motion.div
-                    whileHover={{ scale: 1.05 }}
+                    whileHover={{ scale: 1.05, y: -2 }}
                     whileTap={{ scale: 0.98 }}
                     className="w-full sm:w-auto"
                   >
                     <Button 
-                      className="group bg-habit-purple hover:bg-habit-purple/90 rounded-full h-14 px-8 text-lg relative overflow-hidden w-full"
+                      className="group bg-gradient-to-r from-habit-purple to-habit-purple-700 hover:shadow-lg hover:shadow-habit-purple/20 rounded-full h-14 px-8 text-lg font-medium relative overflow-hidden w-full transition-all duration-300"
                       onClick={() => navigate('/register')}
                     >
                       <motion.span 
@@ -298,13 +296,13 @@ const HomePage = () => {
                     </Button>
                   </motion.div>
                   <motion.div
-                    whileHover={{ scale: 1.05 }}
+                    whileHover={{ scale: 1.05, y: -2 }}
                     whileTap={{ scale: 0.98 }}
                     className="w-full sm:w-auto"
                   >
                     <Button 
                       variant="outline"
-                      className="rounded-full h-14 px-8 text-lg border-2 hover:bg-background/5 w-full flex items-center justify-center"
+                      className="rounded-full h-14 px-8 text-lg font-medium border-2 border-white/20 bg-white/5 backdrop-blur-sm hover:bg-white/10 hover:border-white/30 w-full flex items-center justify-center transition-all duration-300"
                       onClick={() => {
                         const featuresElement = featuresRef.current;
                         if (featuresElement) {
@@ -312,68 +310,85 @@ const HomePage = () => {
                         }
                       }}
                     >
-                      <PlayCircle className="mr-2 h-5 w-5" />
+                      <PlayCircle className="mr-2 h-5 w-5 text-habit-teal" />
                       View Demo
                     </Button>
                   </motion.div>
                 </motion.div>
 
-                {/* New "Trusted by users" section */}
+                {/* Enhanced "Trusted by users" section */}
                 <motion.div
-                  className="mt-12"
+                  className="mt-12 pt-6 border-t border-white/10"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: heroInView ? 1 : 0 }}
                   transition={{ duration: 0.8, delay: 1.2 }}
                 >
-                  <p className="text-sm uppercase tracking-wider text-foreground/50 mb-4">Trusted by thousands of users</p>
-                  <div className="flex flex-wrap items-center gap-6">
+                  <p className="text-sm uppercase tracking-wider text-foreground/60 mb-4 font-medium">Trusted by thousands of users</p>
+                  <div className="flex flex-wrap items-center gap-6 justify-center lg:justify-start">
                     <div className="flex -space-x-3">
-                      {[1, 2, 3, 4, 5].map((i) => (
+                      {[1, 2, 3, 4].map((i) => (
                         <motion.div 
                           key={i}
-                          className={`size-10 rounded-full border-2 border-background flex items-center justify-center bg-muted/80 font-medium text-sm`}
+                          className={`size-10 rounded-full border-2 border-background flex items-center justify-center bg-gradient-to-br ${
+                            ['from-pink-400 to-rose-500', 'from-blue-400 to-indigo-500', 'from-green-400 to-emerald-500', 'from-yellow-400 to-amber-500'][i-1]
+                          } font-medium text-white text-sm shadow-md`}
                           initial={{ opacity: 0, x: -10 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: 1.2 + i * 0.1 }}
+                          whileHover={{ y: -2, scale: 1.05 }}
                         >
-                          {["J", "S", "M", "R", "K"][i-1]}
+                          {["J", "S", "M", "R"][i-1]}
                         </motion.div>
                       ))}
                       <motion.div 
-                        className="size-10 rounded-full border-2 border-background flex items-center justify-center bg-habit-purple/20 text-habit-purple font-medium text-sm"
+                        className="size-10 rounded-full border-2 border-background bg-gradient-to-r from-habit-purple to-habit-teal flex items-center justify-center text-white font-medium text-sm shadow-md"
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 1.8 }}
+                        transition={{ delay: 1.6 }}
+                        whileHover={{ y: -2, scale: 1.05 }}
                       >
                         +8k
                       </motion.div>
                     </div>
                     <motion.div
-                      className="flex gap-1"
+                      className="flex gap-1 items-center"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      transition={{ delay: 1.9 }}
+                      transition={{ delay: 1.7 }}
                     >
                       {[1, 2, 3, 4, 5].map((i) => (
-                        <Star key={i} className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                        <motion.div
+                          key={i}
+                          whileHover={{ scale: 1.2, rotate: 5, y: -2 }}
+                        >
+                          <Star key={i} className="h-5 w-5 text-yellow-400 fill-yellow-400" />
+                        </motion.div>
                       ))}
+                      <motion.span 
+                        className="ml-2 font-medium"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 1.8 }}
+                      >
+                        4.8/5
+                      </motion.span>
                     </motion.div>
                     <motion.span 
                       className="text-sm text-foreground/70"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      transition={{ delay: 2 }}
+                      transition={{ delay: 1.9 }}
                     >
-                      4.8/5 from 2,300+ reviews
+                      from 2,300+ reviews
                     </motion.span>
                   </div>
                 </motion.div>
               </motion.div>
             </motion.div>
             
-            {/* Right column: Animated illustration - adjusted for better balance */}
+            {/* Right column: Enhanced animated dashboard mockup */}
             <motion.div 
-              className="lg:col-span-6"
+              className="lg:h-full flex items-center justify-center"
               style={{ 
                 opacity: opacityHero, 
                 rotateX: heroRotate,
@@ -383,7 +398,7 @@ const HomePage = () => {
               onMouseMove={handleMouseMove}
             >
               <motion.div 
-                className="relative max-w-xl mx-auto lg:mx-0 lg:ml-auto"
+                className="relative w-full max-w-lg xl:max-w-xl"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: heroInView ? 1 : 0, y: heroInView ? 0 : 30 }}
                 transition={{ duration: 0.8, delay: 0.6 }}
@@ -392,28 +407,28 @@ const HomePage = () => {
                   y: imageY
                 }}
               >
-                {/* 3D Floating Dashboard Mockup */}
+                {/* Enhanced 3D Floating Dashboard Mockup */}
                 <div className="relative">
-                  {/* Background glow effect */}
+                  {/* Improved background glow effect */}
                   <motion.div 
-                    className="absolute inset-0 bg-habit-purple/20 blur-3xl rounded-full"
+                    className="absolute inset-0 bg-gradient-to-r from-habit-purple/30 to-habit-teal/30 blur-[100px] rounded-full"
                     animate={{ 
                       scale: [1, 1.2, 1],
-                      opacity: [0.5, 0.7, 0.5],
+                      opacity: [0.6, 0.8, 0.6],
                     }}
                     transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
                   />
                   
-                  {/* Main dashboard mockup */}
+                  {/* Enhanced main dashboard mockup */}
                   <motion.div 
                     className="relative z-10"
                     whileHover={{ 
-                      y: -10,
-                      boxShadow: "0 30px 60px rgba(0,0,0,0.20)",
+                      y: -15,
+                      boxShadow: "0 30px 60px rgba(0,0,0,0.30)",
                       transition: { duration: 0.4 }
                     }}
                   >
-                    <div className="bg-black/5 dark:bg-white/5 h-8 flex items-center px-4 border-b border-border/30 rounded-t-xl">
+                    <div className="bg-black/10 dark:bg-white/5 h-10 flex items-center px-4 border-b border-border/30 rounded-t-xl backdrop-blur-md">
                       <div className="flex space-x-2">
                         <motion.div 
                           className="size-3 rounded-full bg-red-400"
@@ -429,44 +444,52 @@ const HomePage = () => {
                         />
                       </div>
                     </div>
-                    <div className="bg-white/5 backdrop-blur-sm rounded-b-xl border border-white/10 shadow-2xl">
+                    <div className="bg-white/10 backdrop-blur-md rounded-b-xl border border-white/20 shadow-2xl">
                       <div className="grid grid-cols-12 gap-4 p-6">
                         {/* Header area */}
-                        <div className="col-span-12 flex justify-between items-center mb-4">
+                        <div className="col-span-12 flex justify-between items-center mb-5">
                           <motion.div 
-                            className="h-8 w-28 bg-habit-purple/20 rounded-md"
+                            className="h-8 w-32 bg-habit-purple/20 rounded-md"
                             animate={{ opacity: [0.7, 1, 0.7] }}
                             transition={{ duration: 2, repeat: Infinity }}  
                           />
                           <div className="flex gap-2">
                             <motion.div 
-                              className="h-8 w-8 bg-habit-teal/20 rounded-full"
+                              className="h-9 w-9 bg-habit-teal/20 rounded-full flex items-center justify-center"
                               animate={{ scale: [1, 1.1, 1] }}
                               transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-                            />
+                              whileHover={{ scale: 1.15 }}
+                            >
+                              <div className="h-4 w-4 bg-habit-teal/60 rounded-full" />
+                            </motion.div>
                             <motion.div 
-                              className="h-8 w-8 bg-habit-purple/20 rounded-full"
+                              className="h-9 w-9 bg-habit-purple/20 rounded-full flex items-center justify-center"
                               animate={{ scale: [1, 1.1, 1] }}
                               transition={{ duration: 2, repeat: Infinity, delay: 0.7 }}
-                            />
+                              whileHover={{ scale: 1.15 }}
+                            >
+                              <div className="h-4 w-4 bg-habit-purple/60 rounded-full" />
+                            </motion.div>
                           </div>
                         </div>
                         
                         {/* Dashboard stats area */}
                         <div className="col-span-8 space-y-4">
                           <motion.div 
-                            className="h-24 bg-gradient-to-r from-habit-purple/10 to-habit-teal/10 rounded-xl border border-white/10 p-4 flex items-center"
+                            className="h-28 bg-gradient-to-r from-habit-purple/10 to-habit-teal/10 rounded-xl border border-white/10 p-5 flex items-center"
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.8 }}
+                            whileHover={{ scale: 1.02, y: -2 }}
                           >
                             <div className="space-y-2">
                               <div className="h-4 w-36 bg-white/20 rounded-md" />
                               <div className="h-6 w-24 bg-habit-purple/40 rounded-md" />
+                              <div className="h-3 w-32 bg-white/10 rounded-md" />
                             </div>
                             <div className="ml-auto">
                               <motion.div 
-                                className="size-14 rounded-full bg-habit-purple/30 flex items-center justify-center"
+                                className="size-16 rounded-full bg-habit-purple/30 flex items-center justify-center"
                                 animate={{ 
                                   boxShadow: [
                                     "0 0 0 rgba(108, 93, 211, 0)",
@@ -476,7 +499,7 @@ const HomePage = () => {
                                 }}
                                 transition={{ duration: 2, repeat: Infinity }}
                               >
-                                <Calendar className="size-6 text-white" />
+                                <Calendar className="size-7 text-white" />
                               </motion.div>
                             </div>
                           </motion.div>
@@ -493,12 +516,18 @@ const HomePage = () => {
                                 key={i}
                                 className={`aspect-square rounded-md ${
                                   [2, 5, 9, 10, 13, 14, 15, 16, 19, 20].includes(i) 
-                                  ? 'bg-habit-purple/60' 
+                                  ? 'bg-gradient-to-br from-habit-purple/60 to-habit-purple/80' 
                                   : 'bg-white/10'
                                 }`}
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
                                 transition={{ delay: 1.2 + i * 0.02 }}
+                                whileHover={{ 
+                                  scale: 1.1, 
+                                  boxShadow: [2, 5, 9, 10, 13, 14, 15, 16, 19, 20].includes(i) 
+                                    ? "0 0 15px rgba(108, 93, 211, 0.4)" 
+                                    : "none"
+                                }}
                               />
                             ))}
                           </motion.div>
@@ -511,6 +540,7 @@ const HomePage = () => {
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.9 }}
+                            whileHover={{ scale: 1.02, y: -2 }}
                           >
                             <div className="h-4 w-24 bg-white/20 rounded-md mb-3" />
                             <div className="space-y-2">
@@ -526,69 +556,77 @@ const HomePage = () => {
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 1 }}
+                            whileHover={{ scale: 1.02, y: -2 }}
                           >
                             <div className="h-4 w-20 bg-white/20 rounded-md mb-3" />
                             <div className="h-16 rounded-md overflow-hidden">
                               <div className="flex h-full items-end">
                                 <motion.div 
-                                  className="h-[30%] w-1/5 bg-habit-purple/50 rounded-sm mx-0.5"
+                                  className="h-[30%] w-1/5 bg-gradient-to-t from-habit-purple/70 to-habit-purple/50 rounded-sm mx-0.5"
                                   initial={{ height: '0%' }}
                                   animate={{ height: '30%' }}
                                   transition={{ delay: 1.5, duration: 0.8 }}
+                                  whileHover={{ height: '40%' }}
                                 />
                                 <motion.div 
-                                  className="h-[50%] w-1/5 bg-habit-purple/60 rounded-sm mx-0.5"
+                                  className="h-[50%] w-1/5 bg-gradient-to-t from-habit-purple/80 to-habit-purple/60 rounded-sm mx-0.5"
                                   initial={{ height: '0%' }}
                                   animate={{ height: '50%' }}
                                   transition={{ delay: 1.6, duration: 0.8 }}
+                                  whileHover={{ height: '60%' }}
                                 />
                                 <motion.div 
-                                  className="h-[70%] w-1/5 bg-habit-purple/70 rounded-sm mx-0.5"
+                                  className="h-[70%] w-1/5 bg-gradient-to-t from-habit-purple/90 to-habit-purple/70 rounded-sm mx-0.5"
                                   initial={{ height: '0%' }}
                                   animate={{ height: '70%' }}
                                   transition={{ delay: 1.7, duration: 0.8 }}
+                                  whileHover={{ height: '80%' }}
                                 />
                                 <motion.div 
-                                  className="h-[90%] w-1/5 bg-habit-purple/80 rounded-sm mx-0.5"
+                                  className="h-[90%] w-1/5 bg-gradient-to-t from-habit-purple to-habit-purple/80 rounded-sm mx-0.5"
                                   initial={{ height: '0%' }}
                                   animate={{ height: '90%' }}
                                   transition={{ delay: 1.8, duration: 0.8 }}
+                                  whileHover={{ height: '100%' }}
                                 />
                                 <motion.div 
-                                  className="h-[60%] w-1/5 bg-habit-purple/60 rounded-sm mx-0.5"
+                                  className="h-[60%] w-1/5 bg-gradient-to-t from-habit-purple/85 to-habit-purple/65 rounded-sm mx-0.5"
                                   initial={{ height: '0%' }}
                                   animate={{ height: '60%' }}
                                   transition={{ delay: 1.9, duration: 0.8 }}
+                                  whileHover={{ height: '70%' }}
                                 />
                               </div>
                             </div>
                           </motion.div>
                         </div>
                       
-                        {/* Floating notification */}
+                        {/* Floating notification with enhanced design */}
                         <motion.div 
-                          className="absolute -bottom-5 -right-2 bg-white/10 backdrop-blur-md p-3 rounded-lg border border-white/20 shadow-xl w-48"
+                          className="absolute -bottom-6 -right-4 bg-white/10 backdrop-blur-xl p-4 rounded-lg border border-white/20 shadow-xl w-48"
                           initial={{ opacity: 0, y: 20, x: 20 }}
                           animate={{ opacity: 1, y: 0, x: 0 }}
                           transition={{ delay: 2, duration: 0.6 }}
+                          whileHover={{ scale: 1.05, y: -3, boxShadow: "0 15px 30px rgba(0,0,0,0.2)" }}
                         >
                           <div className="flex items-center gap-3">
-                            <div className="size-8 rounded-full bg-green-100 flex items-center justify-center">
-                              <CheckCircle2 className="size-4 text-green-600" />
+                            <div className="size-9 rounded-full bg-green-500/20 flex items-center justify-center">
+                              <CheckCircle2 className="size-5 text-green-500" />
                             </div>
                             <div>
-                              <div className="h-3 w-24 bg-white/30 rounded-md mb-1" />
+                              <div className="h-3 w-24 bg-white/40 rounded-md mb-1" />
                               <div className="h-2 w-32 bg-white/20 rounded-md" />
                             </div>
                           </div>
                         </motion.div>
 
-                        {/* Floating sparkle effects */}
+                        {/* Enhanced floating sparkle effects */}
                         <motion.div
-                          className="absolute -top-2 -left-2 text-yellow-300"
+                          className="absolute -top-4 -left-2 text-yellow-300"
                           animate={{ 
                             rotate: [0, 20, 0],
-                            scale: [1, 1.2, 1],
+                            scale: [1, 1.3, 1],
+                            filter: ["drop-shadow(0 0 0px rgba(250, 204, 21, 0))", "drop-shadow(0 0 8px rgba(250, 204, 21, 0.8))", "drop-shadow(0 0 0px rgba(250, 204, 21, 0))"]
                           }}
                           transition={{ duration: 3, repeat: Infinity }}
                         >
@@ -598,7 +636,8 @@ const HomePage = () => {
                           className="absolute bottom-10 -left-4 text-habit-purple"
                           animate={{ 
                             rotate: [0, -20, 0],
-                            scale: [1, 1.1, 1],
+                            scale: [1, 1.2, 1],
+                            filter: ["drop-shadow(0 0 0px rgba(108, 93, 211, 0))", "drop-shadow(0 0 8px rgba(108, 93, 211, 0.8))", "drop-shadow(0 0 0px rgba(108, 93, 211, 0))"]
                           }}
                           transition={{ duration: 2.5, repeat: Infinity, delay: 0.5 }}
                         >
@@ -608,7 +647,8 @@ const HomePage = () => {
                           className="absolute top-1/4 -right-3 text-habit-teal"
                           animate={{ 
                             rotate: [0, 15, 0],
-                            scale: [1, 1.15, 1],
+                            scale: [1, 1.25, 1],
+                            filter: ["drop-shadow(0 0 0px rgba(65, 208, 199, 0))", "drop-shadow(0 0 8px rgba(65, 208, 199, 0.8))", "drop-shadow(0 0 0px rgba(65, 208, 199, 0))"]
                           }}
                           transition={{ duration: 3.5, repeat: Infinity, delay: 1 }}
                         >
@@ -618,12 +658,12 @@ const HomePage = () => {
                     </div>
                   </motion.div>
                   
-                  {/* Shadow element */}
+                  {/* Enhanced shadow element */}
                   <motion.div 
-                    className="h-4 bg-black/20 blur-md rounded-full w-4/5 mx-auto mt-5"
+                    className="h-4 bg-black/30 blur-xl rounded-full w-4/5 mx-auto mt-5"
                     animate={{ 
-                      width: ["80%", "70%", "80%"],
-                      opacity: [0.3, 0.2, 0.3]
+                      width: ["80%", "65%", "80%"],
+                      opacity: [0.3, 0.15, 0.3]
                     }}
                     transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                   />
