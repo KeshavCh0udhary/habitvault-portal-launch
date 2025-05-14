@@ -378,6 +378,11 @@ export default function AnalyticsPage() {
   
   // Calculate check-in distribution
   const statusDistribution = React.useMemo(() => {
+    // If there are no habits, return empty array
+    if (habits.length === 0) {
+      return [];
+    }
+
     // Only count check-ins within the selected date range
     const filteredCheckIns = checkIns.filter(checkIn => {
       const checkInDate = parseISO(checkIn.date);
@@ -387,25 +392,88 @@ export default function AnalyticsPage() {
       });
     });
 
-    const completed = filteredCheckIns.filter(c => c.status === 'completed').length;
-    const missed = filteredCheckIns.filter(c => c.status === 'missed').length;
+    // Filter habits for selected period
+    const activeHabits = habits.filter(habit => {
+      const habitStartDate = parseISO(habit.start_date);
+      // Include habit if its start date is before or within the selected period
+      return habitStartDate <= dateRange.end;
+    });
+
+    // If no active habits in the selected period, return empty array
+    if (activeHabits.length === 0) {
+      return [];
+    }
+
+    // Filter check-ins by selected habit if specific one is chosen
+    const relevantCheckIns = selectedHabit === "all" 
+      ? filteredCheckIns 
+      : filteredCheckIns.filter(checkIn => checkIn.habit_id === selectedHabit);
+
+    // Only count actual check-ins (not missing ones)
+    const actualCheckIns = relevantCheckIns.filter(checkIn => 
+      checkIn.status === 'completed' || checkIn.status === 'missed'
+    );
+
+    if (actualCheckIns.length === 0) {
+      return [];
+    }
+
+    const completed = actualCheckIns.filter(c => c.status === 'completed').length;
+    const missed = actualCheckIns.filter(c => c.status === 'missed').length;
     
-    // Only include skipped if we have actual skipped check-ins
-    const skipped = filteredCheckIns.filter(c => c.status === 'skipped').length;
+    // Calculate percentages based on actual check-ins only
+    const total = completed + missed;
+    const data = [];
     
-    const data = [
-      { name: 'Completed', value: completed },
-      { name: 'Missed', value: missed },
-    ];
-    
-    // Only add skipped to the distribution if there are actual skipped check-ins
-    if (skipped > 0) {
-      data.push({ name: 'Skipped', value: skipped });
+    if (completed > 0) {
+      data.push({ 
+        name: 'Completed', 
+        value: completed,
+        percentage: Math.round((completed / total) * 100)
+      });
+    }
+    if (missed > 0) {
+      data.push({ 
+        name: 'Missed', 
+        value: missed,
+        percentage: Math.round((missed / total) * 100)
+      });
     }
     
-    return data.filter(item => item.value > 0); // Remove zero values
-  }, [checkIns, dateRange.start, dateRange.end, lastUpdate]);
+    return data;
+  }, [checkIns, habits, dateRange.start, dateRange.end, selectedHabit, lastUpdate]);
   
+  // Calculate habit consistency stats
+  const consistencyStats = React.useMemo(() => {
+    if (habits.length === 0) {
+      return {
+        totalCheckIns: 0,
+        longestStreak: 0,
+        habitWithLongestStreak: null
+      };
+    }
+
+    // Find habit with longest streak
+    const habitWithLongestStreak = habits.reduce((longest, current) => {
+      return (current.longest_streak || 0) > (longest?.longest_streak || 0) ? current : longest;
+    }, habits[0]);
+
+    // Count total check-ins in the selected period
+    const totalCheckIns = checkIns.filter(checkIn => {
+      const checkInDate = parseISO(checkIn.date);
+      return isWithinInterval(checkInDate, { 
+        start: dateRange.start, 
+        end: dateRange.end 
+      }) && checkIn.status === 'completed';
+    }).length;
+
+    return {
+      totalCheckIns,
+      longestStreak: habitWithLongestStreak?.longest_streak || 0,
+      habitWithLongestStreak
+    };
+  }, [habits, checkIns, dateRange.start, dateRange.end]);
+
   // Get data for habit completion by name
   const habitCompletionData = React.useMemo(() => {
     if (habits.length === 0) return [];
@@ -519,23 +587,19 @@ export default function AnalyticsPage() {
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-medium">Habit Consistency</CardTitle>
             <CardDescription>
-              Your check-in distribution
+              Streak and check-in stats
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex justify-between items-center mt-1">
-              <div className="text-3xl font-bold">
-                {dailyCheckIns.length}
+            <div className="flex flex-col gap-2 mt-1">
+              <div className="text-2xl font-bold">
+                {consistencyStats.longestStreak} days
               </div>
-              <div className="flex gap-1">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full bg-green-500 mr-1"></div>
-                  <span className="text-xs">Completed</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full bg-red-500 mr-1"></div>
-                  <span className="text-xs">Missed</span>
-                </div>
+              <div className="text-sm text-muted-foreground">
+                Longest streak: {consistencyStats.habitWithLongestStreak?.name || 'No streaks yet'}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Total check-ins: {consistencyStats.totalCheckIns}
               </div>
             </div>
           </CardContent>
@@ -602,7 +666,7 @@ export default function AnalyticsPage() {
             <CardHeader>
               <CardTitle>Check-in Distribution</CardTitle>
               <CardDescription>
-                Breakdown of your habit check-ins
+                Distribution of completed vs missed check-ins
               </CardDescription>
             </CardHeader>
             <CardContent className="overflow-hidden">
@@ -619,13 +683,12 @@ export default function AnalyticsPage() {
                         paddingAngle={4}
                         dataKey="value"
                         nameKey="name"
-                        label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                        label={({name, percentage}) => `${name}: ${percentage}%`}
                         labelLine={false}
                       >
                         {statusDistribution.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={
-                            entry.name === 'Completed' ? '#10b981' : 
-                            entry.name === 'Missed' ? '#f43f5e' : '#f59e0b'
+                            entry.name === 'Completed' ? '#10b981' : '#f43f5e'
                           } />
                         ))}
                       </Pie>

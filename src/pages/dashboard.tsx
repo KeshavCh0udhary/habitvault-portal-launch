@@ -1,7 +1,6 @@
-
 import { useState, useEffect, ReactNode } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/contexts/auth-context';
+import { useAuth } from '@/hooks/use-auth';
 import { Habit } from '@/types/habit';
 import { habitService } from '@/services/habit-service';
 import { getHabitsDueToday } from '@/utils/habit-utils';
@@ -14,15 +13,20 @@ import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import DailyQuote from '@/components/daily-quote';
 import MotivationalGreeting from '@/components/motivational-greeting';
+import NewHabitDialog from '@/components/habits/new-habit-dialog';
+import { toast } from 'sonner';
 
 export default function Dashboard() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState('today');
+  const [activeTab, setActiveTab] = useState(() => {
+    return localStorage.getItem('dashboard-tab') || 'today';
+  });
   const [completedTodayIds, setCompletedTodayIds] = useState<string[]>([]);
   const [showQuote, setShowQuote] = useState(() => {
     return localStorage.getItem('habitvault-show-quote') !== 'false';
   });
+  const [isNewHabitDialogOpen, setIsNewHabitDialogOpen] = useState(false);
   const today = format(new Date(), 'yyyy-MM-dd');
 
   // Save quote visibility preference
@@ -77,6 +81,14 @@ export default function Dashboard() {
   const completedToday = completedTodayIds.length;
   const totalDueToday = habitsDueToday.length + completedToday;
 
+  const handleNewHabitClick = () => {
+    if (!user) {
+      toast.error('Please log in to create habits');
+      return;
+    }
+    setIsNewHabitDialogOpen(true);
+  };
+
   // Loading state
   if (isLoading) {
     return (
@@ -123,7 +135,10 @@ export default function Dashboard() {
   ) : (
     <div className="text-center py-8">
       <p className="text-lg mb-4">Nothing here yet. Let's build your first habit!</p>
-      <Button className="bg-habit-purple hover:bg-habit-purple/90">
+      <Button 
+        onClick={handleNewHabitClick}
+        className="bg-habit-purple hover:bg-habit-purple/90"
+      >
         <Plus className="mr-2 h-4 w-4" /> Add Habit
       </Button>
     </div>
@@ -132,7 +147,10 @@ export default function Dashboard() {
   const allHabitsEmptyMessage: ReactNode = (
     <div className="text-center py-8">
       <p className="text-lg mb-4">Nothing here yet. Let's build your first habit!</p>
-      <Button className="bg-habit-purple hover:bg-habit-purple/90">
+      <Button 
+        onClick={handleNewHabitClick}
+        className="bg-habit-purple hover:bg-habit-purple/90"
+      >
         <Plus className="mr-2 h-4 w-4" /> Add Habit
       </Button>
     </div>
@@ -224,6 +242,15 @@ export default function Dashboard() {
           />
         </TabsContent>
       </Tabs>
+
+      <NewHabitDialog 
+        open={isNewHabitDialogOpen} 
+        onOpenChange={setIsNewHabitDialogOpen}
+        onSuccess={() => {
+          setIsNewHabitDialogOpen(false);
+          handleHabitsUpdate();
+        }}
+      />
     </div>
   );
 }

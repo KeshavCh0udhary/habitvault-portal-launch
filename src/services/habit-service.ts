@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Habit, NewHabit, CheckIn, HabitCheckInUpdate } from '@/types/habit';
 import { format } from 'date-fns';
@@ -9,24 +8,33 @@ export const habitService = {
     const userResponse = await supabase.auth.getUser();
     const userId = userResponse.data.user?.id;
     
-    const { data, error } = await supabase
-      .from('habits')
-      .insert({
-        name: habit.name,
-        description: habit.description || null,
-        start_date: habit.start_date || format(new Date(), 'yyyy-MM-dd'),
-        target_days: habit.target_days,
-        user_id: userId
-      })
-      .select()
-      .single();
+    if (!userId) {
+      throw new Error('You must be logged in to create a habit');
+    }
+    
+    try {
+      const { data, error } = await supabase
+        .from('habits')
+        .insert({
+          name: habit.name,
+          description: habit.description || null,
+          start_date: habit.start_date || format(new Date(), 'yyyy-MM-dd'),
+          target_days: habit.target_days,
+          user_id: userId
+        })
+        .select()
+        .single();
 
-    if (error) {
-      console.error('Error creating habit:', error);
+      if (error) {
+        console.error('Error creating habit:', error);
+        throw new Error('Failed to create habit. Please try again.');
+      }
+
+      return data as unknown as Habit;
+    } catch (error) {
+      console.error('Error in createHabit:', error);
       throw error;
     }
-
-    return data as unknown as Habit;
   },
 
   async getUserHabits(): Promise<Habit[]> {

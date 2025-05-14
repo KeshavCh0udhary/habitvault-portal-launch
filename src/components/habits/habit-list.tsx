@@ -1,4 +1,3 @@
-
 import { useState, ReactNode } from 'react';
 import { Habit } from '@/types/habit';
 import HabitCard from './habit-card';
@@ -6,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Plus, Calendar } from 'lucide-react';
 import NewHabitDialog from './new-habit-dialog';
 import { motion } from 'framer-motion';
+import { useAuth } from '@/hooks/use-auth';
+import { toast } from 'sonner';
 
 interface HabitListProps {
   habits: Habit[];
@@ -23,6 +24,15 @@ export default function HabitList({
   date = new Date(),
 }: HabitListProps) {
   const [isNewHabitDialogOpen, setIsNewHabitDialogOpen] = useState(false);
+  const { user } = useAuth();
+
+  const handleNewHabitClick = () => {
+    if (!user) {
+      toast.error('Please log in to create habits');
+      return;
+    }
+    setIsNewHabitDialogOpen(true);
+  };
 
   return (
     <div className="space-y-6">
@@ -31,7 +41,7 @@ export default function HabitList({
           {filterDueToday ? "Today's Habits" : 'All Habits'}
         </h2>
         <Button 
-          onClick={() => setIsNewHabitDialogOpen(true)}
+          onClick={handleNewHabitClick}
           className="bg-habit-purple hover:bg-habit-purple/90"
         >
           <Plus className="h-4 w-4 mr-1" />
@@ -54,7 +64,7 @@ export default function HabitList({
               <h3 className="text-xl font-medium mb-2">Nothing here yet!</h3>
               <p className="text-muted-foreground mb-6">{emptyMessage}</p>
               <Button 
-                onClick={() => setIsNewHabitDialogOpen(true)}
+                onClick={handleNewHabitClick}
                 className="bg-habit-purple hover:bg-habit-purple/90"
                 size="lg"
               >

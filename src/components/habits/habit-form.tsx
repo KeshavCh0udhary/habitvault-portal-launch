@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -45,10 +44,11 @@ type HabitFormValues = z.infer<typeof habitSchema>;
 
 interface HabitFormProps {
   onSuccess: () => void;
+  onError?: (error: Error) => void;
   initialData?: Habit;
 }
 
-export default function HabitForm({ onSuccess, initialData }: HabitFormProps) {
+export default function HabitForm({ onSuccess, onError, initialData }: HabitFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isEditing = !!initialData;
   
@@ -84,7 +84,11 @@ export default function HabitForm({ onSuccess, initialData }: HabitFormProps) {
       onSuccess();
     } catch (error) {
       console.error('Error submitting habit:', error);
-      toast.error('Failed to save habit. Please try again.');
+      if (onError && error instanceof Error) {
+        onError(error);
+      } else {
+        toast.error('Failed to save habit. Please try again.');
+      }
     } finally {
       setIsSubmitting(false);
     }
