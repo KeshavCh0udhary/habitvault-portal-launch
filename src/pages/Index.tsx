@@ -1,15 +1,16 @@
-
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, useScroll, useTransform, useInView, useMotionValueEvent } from 'framer-motion';
+import { motion, useScroll, useTransform, useInView, useMotionValueEvent, useSpring, useMotionValue, useAnimate } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/auth-context';
 import { EnhancedCursorGradient } from '@/components/enhanced-cursor-gradient';
 import { Logo } from '@/components/logo';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { 
   ChevronRight, ArrowRight, CheckCircle2, TrendingUp, Calendar, 
-  Target, Star, Heart, BookOpen, AlertTriangle, Shield, User, Award
+  Target, Star, Heart, BookOpen, AlertTriangle, Shield, User, Award,
+  Sparkles, Zap, RocketIcon, Book, Users, PlayCircle
 } from 'lucide-react';
 import { 
   fadeInUp, fadeIn, scaleIn, createStaggerContainer, 
@@ -21,6 +22,7 @@ const HomePage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [activeSection, setActiveSection] = useState('hero');
+  const isMobile = useIsMobile();
   
   // Refs for all sections for intersection observer
   const heroRef = useRef<HTMLDivElement>(null);
@@ -49,251 +51,595 @@ const HomePage = () => {
     else setActiveSection('cta');
   });
   
-  // Parallax and other scroll-based animations
+  // Enhanced parallax and scroll-based animations
   const opacityHero = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
   const yHero = useTransform(scrollYProgress, [0, 0.2], [0, 50]);
   const heroRotate = useTransform(scrollYProgress, [0, 0.1], [0, -2]);
   const heroScale = useTransform(scrollYProgress, [0, 0.1], [1, 0.95]);
 
-  // Blob animation values
+  // Blob animation values with enhanced motion
   const blobX1 = useTransform(scrollYProgress, [0, 1], [0, -100]);
   const blobY1 = useTransform(scrollYProgress, [0, 1], [0, 50]);
   const blobX2 = useTransform(scrollYProgress, [0, 1], [0, 100]);
   const blobY2 = useTransform(scrollYProgress, [0, 1], [0, -70]);
   
+  // New animations for text reveal
+  const textIndex = useMotionValue(0);
+  const textOpacity = useSpring(textIndex, { damping: 10, stiffness: 100 });
+  
+  // Cursor tracking for hero image
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const heroImageRef = useRef(null);
+  
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (heroImageRef.current && !isMobile) {
+      const rect = (heroImageRef.current as HTMLElement).getBoundingClientRect();
+      const x = e.clientX - rect.left; 
+      const y = e.clientY - rect.top;
+      setMousePosition({ x, y });
+    }
+  };
+  
+  // Calculate parallax effect for hero image based on mouse position
+  const imageX = useSpring(useMotionValue(0), { stiffness: 50, damping: 30 });
+  const imageY = useSpring(useMotionValue(0), { stiffness: 50, damping: 30 });
+  
+  useEffect(() => {
+    if (!isMobile && heroImageRef.current) {
+      const rect = (heroImageRef.current as HTMLElement).getBoundingClientRect();
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      
+      const moveX = (mousePosition.x - centerX) / 30;
+      const moveY = (mousePosition.y - centerY) / 30;
+      
+      imageX.set(moveX);
+      imageY.set(moveY);
+    } else {
+      imageX.set(0);
+      imageY.set(0);
+    }
+  }, [mousePosition, isMobile]);
+  
   useEffect(() => {
     if (user) {
       navigate('/dashboard');
     }
-  }, [user, navigate]);
+    
+    // Trigger text reveal animation when hero section is in view
+    if (heroInView) {
+      textIndex.set(1);
+    } else {
+      textIndex.set(0);
+    }
+  }, [user, navigate, heroInView]);
+  
+  // Animation sequence for headline typing effect
+  const [headlineScope, animateHeadline] = useAnimate();
+  const headlineText = "Build Habits That Stick.";
+  
+  useEffect(() => {
+    if (heroInView) {
+      const sequence = [
+        [headlineScope.current, { opacity: 1 }, { duration: 0.3 }],
+        [headlineScope.current, 
+          { 
+            "--content": `"${headlineText}"`,
+            "--width": "100%" 
+          }, 
+          { duration: 2, ease: "easeOut" }
+        ]
+      ];
+      
+      animateHeadline(sequence);
+    }
+  }, [heroInView, animateHeadline]);
   
   return (
     <div className="min-h-screen">
-      {/* Hero Section with enhanced animation */}
+      {/* Redesigned Hero Section with two-column layout */}
       <EnhancedCursorGradient 
         className="min-h-screen flex items-center pt-16 relative overflow-hidden" 
         intensity="high"
         particleCount={40}
       >
-        {/* Animated background blobs */}
+        {/* Enhanced animated background blobs with more dramatic effect */}
         <motion.div 
           className="hero-blob hero-blob-1"
-          style={{ x: blobX1, y: blobY1 }}
+          style={{ 
+            x: blobX1, 
+            y: blobY1,
+            filter: "blur(60px)",
+            opacity: 0.25,
+            background: "linear-gradient(120deg, #6C5DD3, #8B5CF6)"
+          }}
+          animate={{ 
+            scale: [1, 1.2, 1],
+            filter: ["blur(60px)", "blur(80px)", "blur(60px)"]
+          }}
+          transition={{ 
+            repeat: Infinity, 
+            duration: 15,
+            ease: "easeInOut"
+          }}
         />
         <motion.div 
           className="hero-blob hero-blob-2"
-          style={{ x: blobX2, y: blobY2 }}
+          style={{ 
+            x: blobX2, 
+            y: blobY2,
+            filter: "blur(70px)",
+            opacity: 0.2,
+            background: "linear-gradient(120deg, #41D0C7, #0EA5E9)"
+          }}
+          animate={{ 
+            scale: [1, 1.3, 1],
+            filter: ["blur(70px)", "blur(90px)", "blur(70px)"]
+          }}
+          transition={{ 
+            repeat: Infinity, 
+            duration: 18,
+            ease: "easeInOut",
+            delay: 1
+          }}
         />
-        <motion.div className="hero-blob hero-blob-3" />
+        <motion.div 
+          className="hero-blob hero-blob-3"
+          style={{
+            filter: "blur(50px)",
+            opacity: 0.15,
+            background: "linear-gradient(120deg, #D946EF, #6C5DD3)"
+          }}
+          animate={{ 
+            scale: [1, 1.1, 1],
+            x: [0, 30, 0],
+            y: [0, -20, 0],
+            filter: ["blur(50px)", "blur(70px)", "blur(50px)"]
+          }}
+          transition={{ 
+            repeat: Infinity, 
+            duration: 20,
+            ease: "easeInOut",
+            delay: 2
+          }}
+        />
         
         <div ref={heroRef} className="container px-4 mx-auto relative z-10">
-          <motion.div 
-            className="max-w-4xl mx-auto text-center"
-            style={{ 
-              opacity: opacityHero, 
-              y: yHero,
-              rotateX: heroRotate,
-              scale: heroScale,
-            }}
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ 
-                duration: 0.8, 
-                ease: [0.22, 1, 0.36, 1],
-                delay: 0.2 
-              }}
-              className="mx-auto mb-8"
-              whileHover={{ 
-                rotate: [0, -5, 5, 0], 
-                transition: { duration: 0.5 }
+          {/* Two-column layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            {/* Left column: Content */}
+            <motion.div 
+              className="lg:col-span-6"
+              style={{ 
+                opacity: opacityHero, 
+                y: yHero,
               }}
             >
-              <Logo variant="large" showText />
-            </motion.div>
-            
-            {/* Enhanced hero content with more appealing typography */}
-            <motion.div className="space-y-8">
-              <motion.h1 
-                className="text-5xl md:text-7xl font-bold leading-tight tracking-tight"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: heroInView ? 1 : 0, y: heroInView ? 0 : 20 }}
-                transition={{ duration: 0.7, type: "spring" }}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: heroInView ? 1 : 0, y: heroInView ? 0 : 30 }}
+                transition={{ 
+                  duration: 0.8, 
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                className="mb-6"
               >
-                Build Better Habits,<br className="hidden md:block" />
-                <motion.span 
-                  className="text-gradient inline-block" 
-                  style={{
-                    backgroundSize: '200% 200%',
-                  }}
-                  variants={gradientMovement}
-                  initial="initial"
-                  animate="animate"
-                >
-                  Achieve Your Goals
-                </motion.span>
-              </motion.h1>
-              
-              <motion.p 
-                className="text-xl md:text-2xl text-foreground/80 max-w-2xl mx-auto leading-relaxed"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: heroInView ? 1 : 0, y: heroInView ? 0 : 20 }}
-                transition={{ duration: 0.6, delay: 0.3 }}
-              >
-                HabitVault helps you track, visualize, and maintain consistent routines 
-                that transform your daily habits into measurable success.
-              </motion.p>
-              
-              <motion.div 
-                className="flex flex-col sm:flex-row items-center justify-center gap-5 pt-6"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: heroInView ? 1 : 0, y: heroInView ? 0 : 20 }}
-                transition={{ duration: 0.6, delay: 0.5 }}
-              >
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Button 
-                    className="group bg-habit-purple hover:bg-habit-purple/90 rounded-full h-14 px-8 text-lg relative overflow-hidden"
-                    onClick={() => navigate('/register')}
-                  >
-                    <motion.span 
-                      className="absolute inset-0 bg-white/20 rounded-full"
-                      initial={{ scale: 0, opacity: 0 }}
-                      whileHover={{ 
-                        scale: 1.5, 
-                        opacity: 0.3,
-                        transition: { repeat: Infinity, duration: 1.5 }
-                      }}
-                    />
-                    Start Free, No Login Required
-                    <ChevronRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-                  </Button>
-                </motion.div>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Button 
-                    variant="outline"
-                    className="rounded-full h-14 px-8 text-lg border-2 hover:bg-background/5"
-                    onClick={() => {
-                      const featuresElement = featuresRef.current;
-                      if (featuresElement) {
-                        featuresElement.scrollIntoView({ behavior: 'smooth' });
-                      }
+                <div className="flex items-center gap-3 mb-6">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: heroInView ? 1 : 0, scale: heroInView ? 1 : 0.8 }}
+                    transition={{ 
+                      duration: 0.6, 
+                      ease: [0.22, 1, 0.36, 1],
+                      delay: 0.1 
+                    }}
+                    className="mx-auto lg:mx-0"
+                    whileHover={{ 
+                      rotate: [0, -5, 5, 0], 
+                      transition: { duration: 0.5 }
                     }}
                   >
-                    Explore Features
-                  </Button>
+                    <Logo variant="large" showText />
+                  </motion.div>
+                </div>
+                
+                {/* Animated Headline with typing effect */}
+                <motion.h1 
+                  ref={headlineScope}
+                  className="text-5xl md:text-7xl font-bold leading-tight tracking-tight mb-4 relative"
+                  initial={{ opacity: 0 }}
+                  style={{
+                    "--content": `""`,
+                    "--width": "0%"
+                  } as any}
+                  css={{
+                    "&::after": {
+                      content: "var(--content)",
+                      position: "absolute",
+                      left: 0,
+                      top: 0,
+                      width: "var(--width)",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      borderRight: "3px solid",
+                      animation: "blink 0.75s step-end infinite",
+                    }
+                  }}
+                >
+                  <span className="text-gradient inline-block">Build Habits That Stick.</span>
+                </motion.h1>
+                
+                {/* Animated subheadline with staggered reveal */}
+                <motion.p 
+                  className="text-xl md:text-2xl text-foreground/80 max-w-2xl leading-relaxed"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: heroInView ? 1 : 0, y: heroInView ? 0 : 20 }}
+                  transition={{ duration: 0.6, delay: 0.7 }}
+                >
+                  Track your daily routines, visualize your progress, and stay consistent with HabitVault's powerful habit-building system.
+                </motion.p>
+                
+                {/* Enhanced CTA buttons with animations */}
+                <motion.div 
+                  className="flex flex-col sm:flex-row items-center sm:items-start gap-5 mt-8"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: heroInView ? 1 : 0, y: heroInView ? 0 : 20 }}
+                  transition={{ duration: 0.6, delay: 0.9 }}
+                >
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Button 
+                      className="group bg-habit-purple hover:bg-habit-purple/90 rounded-full h-14 px-8 text-lg relative overflow-hidden w-full sm:w-auto"
+                      onClick={() => navigate('/register')}
+                    >
+                      <motion.span 
+                        className="absolute inset-0 bg-white/20 rounded-full"
+                        initial={{ scale: 0, opacity: 0 }}
+                        whileHover={{ 
+                          scale: 1.5, 
+                          opacity: 0.3,
+                          transition: { repeat: Infinity, duration: 1.5 }
+                        }}
+                      />
+                      Get Started Free
+                      <ChevronRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                    </Button>
+                  </motion.div>
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Button 
+                      variant="outline"
+                      className="rounded-full h-14 px-8 text-lg border-2 hover:bg-background/5 w-full sm:w-auto flex items-center"
+                      onClick={() => {
+                        const featuresElement = featuresRef.current;
+                        if (featuresElement) {
+                          featuresElement.scrollIntoView({ behavior: 'smooth' });
+                        }
+                      }}
+                    >
+                      <PlayCircle className="mr-2 h-5 w-5" />
+                      View Demo
+                    </Button>
+                  </motion.div>
                 </motion.div>
-              </motion.div>
 
-              {/* Enhanced social proof section */}
-              <motion.div
-                className="pt-12 flex flex-wrap justify-center items-center gap-8 md:gap-12"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: heroInView ? 1 : 0 }}
-                transition={{ duration: 0.8, delay: 0.7 }}
-              >
-                <div className="flex flex-col items-center">
-                  <span className="text-3xl md:text-4xl font-bold text-habit-purple">10k+</span>
-                  <span className="text-sm md:text-base text-foreground/60">Active Users</span>
-                </div>
-                <div className="h-10 border-r border-border/40 hidden sm:block"></div>
-                <div className="flex flex-col items-center">
-                  <span className="text-3xl md:text-4xl font-bold text-habit-teal">92%</span>
-                  <span className="text-sm md:text-base text-foreground/60">Success Rate</span>
-                </div>
-                <div className="h-10 border-r border-border/40 hidden sm:block"></div>
-                <div className="flex flex-col items-center">
-                  <span className="text-3xl md:text-4xl font-bold text-habit-purple">4.8/5</span>
-                  <span className="text-sm md:text-base text-foreground/60">User Rating</span>
-                </div>
+                {/* New "Trusted by users" section */}
+                <motion.div
+                  className="mt-12"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: heroInView ? 1 : 0 }}
+                  transition={{ duration: 0.8, delay: 1.2 }}
+                >
+                  <p className="text-sm uppercase tracking-wider text-foreground/50 mb-4">Trusted by thousands of users</p>
+                  <div className="flex flex-wrap items-center gap-6">
+                    <div className="flex -space-x-3">
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <motion.div 
+                          key={i}
+                          className={`size-10 rounded-full border-2 border-background flex items-center justify-center bg-muted/80 font-medium text-sm`}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 1.2 + i * 0.1 }}
+                        >
+                          {["J", "S", "M", "R", "K"][i-1]}
+                        </motion.div>
+                      ))}
+                      <motion.div 
+                        className="size-10 rounded-full border-2 border-background flex items-center justify-center bg-habit-purple/20 text-habit-purple font-medium text-sm"
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 1.8 }}
+                      >
+                        +8k
+                      </motion.div>
+                    </div>
+                    <motion.div
+                      className="flex gap-1"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 1.9 }}
+                    >
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <Star key={i} className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                      ))}
+                    </motion.div>
+                    <motion.span 
+                      className="text-sm text-foreground/70"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 2 }}
+                    >
+                      4.8/5 from 2,300+ reviews
+                    </motion.span>
+                  </div>
+                </motion.div>
               </motion.div>
             </motion.div>
             
+            {/* Right column: Animated illustration */}
             <motion.div 
-              className="mt-16 mb-8 relative"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: heroInView ? 1 : 0, scale: heroInView ? 1 : 0.95 }}
-              transition={{ duration: 0.8, delay: 0.8 }}
-              whileHover={{ 
-                y: -5,
-                boxShadow: "0 30px 60px rgba(0,0,0,0.15)",
-                transition: { duration: 0.2 }
+              className="lg:col-span-6"
+              style={{ 
+                opacity: opacityHero, 
+                rotateX: heroRotate,
+                scale: heroScale 
               }}
+              ref={heroImageRef}
+              onMouseMove={handleMouseMove}
             >
-              <div className="relative mx-auto max-w-4xl rounded-2xl shadow-xl overflow-hidden border border-border/30">
-                <div className="bg-black/5 dark:bg-white/5 h-8 flex items-center px-4 border-b border-border/30">
-                  <div className="flex space-x-2">
-                    <motion.div 
-                      className="size-3 rounded-full bg-red-400"
-                      whileHover={{ scale: 1.2 }}
-                    />
-                    <motion.div 
-                      className="size-3 rounded-full bg-yellow-400"
-                      whileHover={{ scale: 1.2 }}
-                    />
-                    <motion.div 
-                      className="size-3 rounded-full bg-green-400"
-                      whileHover={{ scale: 1.2 }}
-                    />
-                  </div>
-                </div>
-                <div className="bg-muted/10 backdrop-blur-sm">
-                  <AspectRatio ratio={16/9}>
-                    <div className="w-full h-full flex justify-center items-center bg-gradient-to-br from-habit-purple/5 to-habit-teal/5">
-                      <motion.div 
-                        className="text-center p-6"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.8 }}
-                      >
+              <motion.div 
+                className="relative mx-auto"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: heroInView ? 1 : 0, y: heroInView ? 0 : 30 }}
+                transition={{ duration: 0.8, delay: 0.6 }}
+                style={{
+                  x: imageX,
+                  y: imageY
+                }}
+              >
+                {/* 3D Floating Dashboard Mockup */}
+                <div className="relative">
+                  {/* Background glow effect */}
+                  <motion.div 
+                    className="absolute inset-0 bg-habit-purple/20 blur-3xl rounded-full"
+                    animate={{ 
+                      scale: [1, 1.2, 1],
+                      opacity: [0.5, 0.7, 0.5],
+                    }}
+                    transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+                  />
+                  
+                  {/* Main dashboard mockup */}
+                  <motion.div 
+                    className="relative z-10"
+                    whileHover={{ 
+                      y: -10,
+                      boxShadow: "0 30px 60px rgba(0,0,0,0.20)",
+                      transition: { duration: 0.4 }
+                    }}
+                  >
+                    <div className="bg-black/5 dark:bg-white/5 h-8 flex items-center px-4 border-b border-border/30 rounded-t-xl">
+                      <div className="flex space-x-2">
                         <motion.div 
-                          className="size-24 bg-habit-purple/10 rounded-full flex items-center justify-center mx-auto mb-6"
-                          animate={{ 
-                            boxShadow: [
-                              "0 0 0 rgba(108, 93, 211, 0)",
-                              "0 0 20px rgba(108, 93, 211, 0.5)",
-                              "0 0 0 rgba(108, 93, 211, 0)"
-                            ]
-                          }}
-                          transition={{ duration: 2, repeat: Infinity }}
-                        >
-                          <Calendar className="size-12 text-habit-purple" />
-                        </motion.div>
-                        <h3 className="text-2xl font-semibold mb-3">Your Habit Journey Awaits</h3>
-                        <p className="text-foreground/70 max-w-md mx-auto">
-                          Track your progress, visualize your success, and build lasting habits with HabitVault's intuitive dashboard.
-                        </p>
-                      </motion.div>
+                          className="size-3 rounded-full bg-red-400"
+                          whileHover={{ scale: 1.2 }}
+                        />
+                        <motion.div 
+                          className="size-3 rounded-full bg-yellow-400"
+                          whileHover={{ scale: 1.2 }}
+                        />
+                        <motion.div 
+                          className="size-3 rounded-full bg-green-400"
+                          whileHover={{ scale: 1.2 }}
+                        />
+                      </div>
                     </div>
-                  </AspectRatio>
+                    <div className="bg-white/5 backdrop-blur-sm rounded-b-xl border border-white/10 shadow-2xl">
+                      <div className="grid grid-cols-12 gap-4 p-6">
+                        {/* Header area */}
+                        <div className="col-span-12 flex justify-between items-center mb-4">
+                          <motion.div 
+                            className="h-8 w-28 bg-habit-purple/20 rounded-md"
+                            animate={{ opacity: [0.7, 1, 0.7] }}
+                            transition={{ duration: 2, repeat: Infinity }}  
+                          />
+                          <div className="flex gap-2">
+                            <motion.div 
+                              className="h-8 w-8 bg-habit-teal/20 rounded-full"
+                              animate={{ scale: [1, 1.1, 1] }}
+                              transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                            />
+                            <motion.div 
+                              className="h-8 w-8 bg-habit-purple/20 rounded-full"
+                              animate={{ scale: [1, 1.1, 1] }}
+                              transition={{ duration: 2, repeat: Infinity, delay: 0.7 }}
+                            />
+                          </div>
+                        </div>
+                        
+                        {/* Dashboard stats area */}
+                        <div className="col-span-8 space-y-4">
+                          <motion.div 
+                            className="h-24 bg-gradient-to-r from-habit-purple/10 to-habit-teal/10 rounded-xl border border-white/10 p-4 flex items-center"
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.8 }}
+                          >
+                            <div className="space-y-2">
+                              <div className="h-4 w-36 bg-white/20 rounded-md" />
+                              <div className="h-6 w-24 bg-habit-purple/40 rounded-md" />
+                            </div>
+                            <div className="ml-auto">
+                              <motion.div 
+                                className="size-14 rounded-full bg-habit-purple/30 flex items-center justify-center"
+                                animate={{ 
+                                  boxShadow: [
+                                    "0 0 0 rgba(108, 93, 211, 0)",
+                                    "0 0 20px rgba(108, 93, 211, 0.5)",
+                                    "0 0 0 rgba(108, 93, 211, 0)"
+                                  ]
+                                }}
+                                transition={{ duration: 2, repeat: Infinity }}
+                              >
+                                <Calendar className="size-6 text-white" />
+                              </motion.div>
+                            </div>
+                          </motion.div>
+                          
+                          {/* Calendar grid mockup */}
+                          <motion.div 
+                            className="grid grid-cols-7 gap-2"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 1.1 }}
+                          >
+                            {Array(21).fill(0).map((_, i) => (
+                              <motion.div 
+                                key={i}
+                                className={`aspect-square rounded-md ${
+                                  [2, 5, 9, 10, 13, 14, 15, 16, 19, 20].includes(i) 
+                                  ? 'bg-habit-purple/60' 
+                                  : 'bg-white/10'
+                                }`}
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                transition={{ delay: 1.2 + i * 0.02 }}
+                              />
+                            ))}
+                          </motion.div>
+                        </div>
+                        
+                        {/* Right sidebar mockup */}
+                        <div className="col-span-4 space-y-4">
+                          <motion.div 
+                            className="h-32 bg-white/5 rounded-xl border border-white/10 p-3"
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.9 }}
+                          >
+                            <div className="h-4 w-24 bg-white/20 rounded-md mb-3" />
+                            <div className="space-y-2">
+                              <div className="h-3 w-full bg-white/10 rounded-md" />
+                              <div className="h-3 w-4/5 bg-white/10 rounded-md" />
+                              <div className="h-3 w-3/5 bg-white/10 rounded-md" />
+                              <div className="h-3 w-4/5 bg-white/10 rounded-md" />
+                            </div>
+                          </motion.div>
+                          
+                          <motion.div 
+                            className="h-32 bg-gradient-to-br from-habit-teal/10 to-habit-purple/10 rounded-xl border border-white/10 p-3"
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 1 }}
+                          >
+                            <div className="h-4 w-20 bg-white/20 rounded-md mb-3" />
+                            <div className="h-16 rounded-md overflow-hidden">
+                              <div className="flex h-full items-end">
+                                <motion.div 
+                                  className="h-[30%] w-1/5 bg-habit-purple/50 rounded-sm mx-0.5"
+                                  initial={{ height: '0%' }}
+                                  animate={{ height: '30%' }}
+                                  transition={{ delay: 1.5, duration: 0.8 }}
+                                />
+                                <motion.div 
+                                  className="h-[50%] w-1/5 bg-habit-purple/60 rounded-sm mx-0.5"
+                                  initial={{ height: '0%' }}
+                                  animate={{ height: '50%' }}
+                                  transition={{ delay: 1.6, duration: 0.8 }}
+                                />
+                                <motion.div 
+                                  className="h-[70%] w-1/5 bg-habit-purple/70 rounded-sm mx-0.5"
+                                  initial={{ height: '0%' }}
+                                  animate={{ height: '70%' }}
+                                  transition={{ delay: 1.7, duration: 0.8 }}
+                                />
+                                <motion.div 
+                                  className="h-[90%] w-1/5 bg-habit-purple/80 rounded-sm mx-0.5"
+                                  initial={{ height: '0%' }}
+                                  animate={{ height: '90%' }}
+                                  transition={{ delay: 1.8, duration: 0.8 }}
+                                />
+                                <motion.div 
+                                  className="h-[60%] w-1/5 bg-habit-purple/60 rounded-sm mx-0.5"
+                                  initial={{ height: '0%' }}
+                                  animate={{ height: '60%' }}
+                                  transition={{ delay: 1.9, duration: 0.8 }}
+                                />
+                              </div>
+                            </div>
+                          </motion.div>
+                        </div>
+                      
+                        {/* Floating notification */}
+                        <motion.div 
+                          className="absolute -bottom-5 -right-2 bg-white/10 backdrop-blur-md p-3 rounded-lg border border-white/20 shadow-xl w-48"
+                          initial={{ opacity: 0, y: 20, x: 20 }}
+                          animate={{ opacity: 1, y: 0, x: 0 }}
+                          transition={{ delay: 2, duration: 0.6 }}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="size-8 rounded-full bg-green-100 flex items-center justify-center">
+                              <CheckCircle2 className="size-4 text-green-600" />
+                            </div>
+                            <div>
+                              <div className="h-3 w-24 bg-white/30 rounded-md mb-1" />
+                              <div className="h-2 w-32 bg-white/20 rounded-md" />
+                            </div>
+                          </div>
+                        </motion.div>
+
+                        {/* Floating sparkle effects */}
+                        <motion.div
+                          className="absolute -top-2 -left-2 text-yellow-300"
+                          animate={{ 
+                            rotate: [0, 20, 0],
+                            scale: [1, 1.2, 1],
+                          }}
+                          transition={{ duration: 3, repeat: Infinity }}
+                        >
+                          <Sparkles className="size-6" />
+                        </motion.div>
+                        <motion.div
+                          className="absolute bottom-10 -left-4 text-habit-purple"
+                          animate={{ 
+                            rotate: [0, -20, 0],
+                            scale: [1, 1.1, 1],
+                          }}
+                          transition={{ duration: 2.5, repeat: Infinity, delay: 0.5 }}
+                        >
+                          <Zap className="size-5" />
+                        </motion.div>
+                        <motion.div
+                          className="absolute top-1/4 -right-3 text-habit-teal"
+                          animate={{ 
+                            rotate: [0, 15, 0],
+                            scale: [1, 1.15, 1],
+                          }}
+                          transition={{ duration: 3.5, repeat: Infinity, delay: 1 }}
+                        >
+                          <RocketIcon className="size-5" />
+                        </motion.div>
+                      </div>
+                    </div>
+                  </motion.div>
+                  
+                  {/* Shadow element */}
+                  <motion.div 
+                    className="h-4 bg-black/20 blur-md rounded-full w-4/5 mx-auto mt-5"
+                    animate={{ 
+                      width: ["80%", "70%", "80%"],
+                      opacity: [0.3, 0.2, 0.3]
+                    }}
+                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                  />
                 </div>
-              </div>
-              
-              {/* Enhanced decorative elements */}
-              <motion.div 
-                className="absolute -z-10 size-80 rounded-full bg-habit-purple/10 blur-3xl -top-20 -left-20"
-                animate={{ 
-                  scale: [1, 1.3, 1],
-                  opacity: [0.5, 0.8, 0.5],
-                }}
-                transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-              />
-              <motion.div 
-                className="absolute -z-10 size-80 rounded-full bg-habit-teal/10 blur-3xl -bottom-20 -right-20"
-                animate={{ 
-                  scale: [1, 1.2, 1],
-                  opacity: [0.5, 0.7, 0.5],
-                }}
-                transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-              />
+              </motion.div>
             </motion.div>
-          </motion.div>
+          </div>
         </div>
       </EnhancedCursorGradient>
 
