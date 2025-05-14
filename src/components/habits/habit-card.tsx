@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { Calendar, Edit, Trash2, Flame } from 'lucide-react';
@@ -48,6 +47,12 @@ export default function HabitCard({ habit, onUpdate, showCheckIn = true, date = 
     } finally {
       setIsDeleting(false);
     }
+  };
+
+  // Handle updates from check-ins
+  const handleCheckInUpdate = () => {
+    // Call the parent's onUpdate to refresh data
+    onUpdate();
   };
   
   return (
@@ -109,7 +114,11 @@ export default function HabitCard({ habit, onUpdate, showCheckIn = true, date = 
           
           {showCheckIn && (
             <div className="mt-4">
-              <HabitCheckInToggle habit={habit} date={date} onUpdate={onUpdate} />
+              <HabitCheckInToggle 
+                habit={habit} 
+                date={date} 
+                onUpdate={handleCheckInUpdate} 
+              />
             </div>
           )}
         </CardContent>

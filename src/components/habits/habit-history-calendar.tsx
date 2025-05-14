@@ -3,11 +3,19 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { format, isWithinInterval, subDays, addDays, parseISO } from 'date-fns';
-import { CalendarDays, Calendar as CalendarIcon, ChevronRight, ChevronLeft } from 'lucide-react';
+import { CalendarDays, Calendar as CalendarIcon, ChevronRight, ChevronLeft, CheckCircle, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Habit } from '@/types/habit';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { habitService } from '@/services/habit-service';
+import { toast } from 'sonner';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface CheckIn {
   id: string;
@@ -22,34 +30,32 @@ interface HabitHistoryCalendarProps {
   checkIns: CheckIn[];
   view?: 'month' | 'week';
   onViewChange?: (view: 'month' | 'week') => void;
+  onUpdate?: () => void;
 }
 
 const HabitHistoryCalendar: React.FC<HabitHistoryCalendarProps> = ({ 
   habits, 
   checkIns, 
   view = 'month',
-  onViewChange
+  onViewChange,
+  onUpdate
 }) => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [selectedView, setSelectedView] = useState<'month' | 'week'>(view);
+  const [selectedView, setSelectedView] = useState<'month' | 'week'>(() => {
+    const savedView = localStorage.getItem('habitHistoryView');
+    return (savedView === 'month' || savedView === 'week') ? savedView : view;
+  });
 
-  // Initialize from localStorage on component mount
+  // Keep the internal state in sync with localStorage changes
   useEffect(() => {
     const savedView = localStorage.getItem('habitHistoryView');
-    if (savedView && (savedView === 'month' || savedView === 'week')) {
+    if (savedView && (savedView === 'month' || savedView === 'week') && savedView !== selectedView) {
       setSelectedView(savedView);
       if (onViewChange) {
         onViewChange(savedView);
       }
-    } else {
-      setSelectedView(view);
     }
   }, []);
-
-  // Keep the internal state in sync with the prop
-  useEffect(() => {
-    setSelectedView(view);
-  }, [view]);
   
   const handleViewChange = (newView: 'month' | 'week') => {
     setSelectedView(newView);
@@ -142,6 +148,25 @@ const HabitHistoryCalendar: React.FC<HabitHistoryCalendarProps> = ({
   
   const selectedDateDetails = getSelectedDateDetails();
   const weekRange = getWeekRange();
+
+  // Add function to handle check-in status updates
+  const handleStatusUpdate = async (habit: Habit & { status: string }, newStatus: 'completed' | 'missed') => {
+    try {
+      const dateStr = format(selectedDate, 'yyyy-MM-dd');
+      
+      await habitService.checkInHabit({
+        habit_id: habit.id,
+        date: dateStr,
+        status: newStatus
+      });
+
+      toast.success(`Updated ${habit.name} status for ${format(selectedDate, 'MMM d, yyyy')}`);
+      if (onUpdate) onUpdate();
+    } catch (error) {
+      console.error('Error updating check-in:', error);
+      toast.error('Failed to update check-in status');
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -243,16 +268,40 @@ const HabitHistoryCalendar: React.FC<HabitHistoryCalendarProps> = ({
                       >
                         <div className="flex items-center justify-between">
                           <h4 className="font-medium">{habit.name}</h4>
-                          <span className={cn(
-                            "text-xs px-2 py-1 rounded-full",
-                            habit.status === 'completed' && "bg-green-500/20 text-green-500",
-                            habit.status === 'missed' && "bg-red-500/20 text-red-500",
-                            habit.status === 'none' && "bg-muted text-muted-foreground"
-                          )}>
-                            {habit.status === 'completed' && 'Completed'}
-                            {habit.status === 'missed' && 'Missed'}
-                            {habit.status === 'none' && 'No Check-in'}
-                          </span>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                className={cn(
+                                  "px-2 h-7",
+                                  habit.status === 'completed' && "text-green-500",
+                                  habit.status === 'missed' && "text-red-500",
+                                  habit.status === 'none' && "text-muted-foreground"
+                                )}
+                              >
+                                {habit.status === 'completed' && <CheckCircle className="h-4 w-4" />}
+                                {habit.status === 'missed' && <XCircle className="h-4 w-4" />}
+                                {habit.status === 'none' && "No Status"}
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem 
+                                onClick={() => handleStatusUpdate(habit, 'completed')}
+                                className="text-green-500"
+                              >
+                                <CheckCircle className="h-4 w-4 mr-2" />
+                                Completed
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => handleStatusUpdate(habit, 'missed')}
+                                className="text-red-500"
+                              >
+                                <XCircle className="h-4 w-4 mr-2" />
+                                Missed
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                         {habit.description && (
                           <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{habit.description}</p>

@@ -1,7 +1,7 @@
-
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { Logo } from '@/components/logo';
 
 const Footer = () => {
   return (
@@ -10,14 +10,9 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Logo and info */}
           <div className="md:col-span-2">
-            <Link to="/" className="flex items-center space-x-2 mb-4">
-              <motion.div
-                className="size-7 bg-gradient-to-tr from-habit-purple to-habit-teal rounded-xl"
-                whileHover={{ rotate: 10 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 10 }}
-              />
-              <span className="font-bold text-lg">HabitVault</span>
-            </Link>
+            <div className="mb-4">
+              <Logo variant="default" />
+            </div>
             <p className="text-foreground/70 max-w-md">
               Track your daily habits, build streaks, and achieve your goals with our visual habit tracking application.
             </p>

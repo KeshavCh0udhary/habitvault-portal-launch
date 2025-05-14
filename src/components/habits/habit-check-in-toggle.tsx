@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { format, parseISO } from 'date-fns';
 import { CheckCircle, XCircle, Clock, Calendar, Sparkles } from 'lucide-react';
@@ -30,26 +29,27 @@ export default function HabitCheckInToggle({ habit, date, onUpdate }: HabitCheck
   const isFutureHabit = !canCheckInHabit(habit, date);
   const startDateFormatted = format(parseISO(habit.start_date), 'MMM d, yyyy');
   
+  // Function to fetch check-in status
+  const fetchCheckInStatus = async () => {
+    try {
+      setLoading(true);
+      const checkIns = await habitService.getHabitCheckins(habit.id);
+      const todayCheckIn = checkIns.find(checkIn => checkIn.date === dateString);
+      
+      if (todayCheckIn) {
+        setCheckInStatus(todayCheckIn.status as 'completed' | 'missed');
+      } else {
+        setCheckInStatus(null);
+      }
+    } catch (error) {
+      console.error('Error fetching check-in status:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   // Fetch initial check-in status
   useEffect(() => {
-    async function fetchCheckInStatus() {
-      try {
-        setLoading(true);
-        const checkIns = await habitService.getHabitCheckins(habit.id);
-        const todayCheckIn = checkIns.find(checkIn => checkIn.date === dateString);
-        
-        if (todayCheckIn) {
-          setCheckInStatus(todayCheckIn.status as 'completed' | 'missed');
-        } else {
-          setCheckInStatus(null);
-        }
-      } catch (error) {
-        console.error('Error fetching check-in status:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    
     fetchCheckInStatus();
   }, [habit.id, dateString]);
   
@@ -85,12 +85,25 @@ export default function HabitCheckInToggle({ habit, date, onUpdate }: HabitCheck
         toast.info(`Habit marked as ${status}`);
       }
       
-      onUpdate();
+      // Call onUpdate to refresh data
+      if (onUpdate) {
+        onUpdate();
+      }
     } catch (error) {
       console.error('Error updating check-in:', error);
       toast.error('Failed to update habit status');
     } finally {
       setUpdating(false);
+    }
+  };
+  
+  // Handle updates from the past check-in dialog
+  const handlePastCheckInUpdate = () => {
+    // Refresh check-in status
+    fetchCheckInStatus();
+    // Call parent's onUpdate to refresh data
+    if (onUpdate) {
+      onUpdate();
     }
   };
   
@@ -125,7 +138,7 @@ export default function HabitCheckInToggle({ habit, date, onUpdate }: HabitCheck
   
   return (
     <div className="flex flex-col items-center justify-center gap-2">
-      <div className="flex items-center justify-center gap-2 w-full relative">
+      <div className="relative w-full flex gap-2">
         <AnimatePresence>
           {showSparkles && (
             <motion.div 
@@ -188,7 +201,7 @@ export default function HabitCheckInToggle({ habit, date, onUpdate }: HabitCheck
         habit={habit}
         open={showPastCheckInDialog}
         onOpenChange={setShowPastCheckInDialog}
-        onUpdate={onUpdate}
+        onUpdate={handlePastCheckInUpdate}
       />
     </div>
   );

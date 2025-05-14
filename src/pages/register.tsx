@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -8,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Loader2, User, Mail, Lock, Github, EyeIcon, EyeOffIcon } from 'lucide-react';
+import { Logo } from '@/components/logo';
 
 const RegisterPage = () => {
   const [email, setEmail] = useState('');
@@ -65,19 +65,17 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8">
+    <div className="min-h-screen flex items-center justify-center py-20 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md space-y-6">
         <div className="text-center">
-          <motion.div 
-            className="size-16 bg-gradient-to-tr from-habit-purple to-habit-teal rounded-2xl mx-auto"
-            whileHover={{ rotate: 10 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 10 }}
-          />
+          <div className="flex justify-center mb-2">
+            <Logo variant="large" showText={false} />
+          </div>
           <motion.h2
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="mt-6 text-3xl font-bold tracking-tight"
+            className="text-3xl font-bold tracking-tight"
           >
             Create an account
           </motion.h2>

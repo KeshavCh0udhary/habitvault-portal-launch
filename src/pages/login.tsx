@@ -1,6 +1,5 @@
-
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
@@ -9,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Loader2, Mail, Lock, Github, EyeIcon, EyeOffIcon, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import { Logo } from '@/components/logo';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -20,6 +20,11 @@ const LoginPage = () => {
   const [isResetting, setIsResetting] = useState(false);
   const { signIn, signInWithOAuth, supabase } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get return URL from query parameters
+  const searchParams = new URLSearchParams(location.search);
+  const returnUrl = searchParams.get('returnUrl') || '/dashboard';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +37,7 @@ const LoginPage = () => {
     setIsLoading(true);
     try {
       await signIn(email, password);
-      navigate('/dashboard');
+      navigate(returnUrl);
     } catch (error) {
       console.error('Login error:', error);
       // Error is already handled in the auth context
@@ -72,6 +77,7 @@ const LoginPage = () => {
   const handleOAuthLogin = async (provider: 'google' | 'github') => {
     try {
       await signInWithOAuth(provider);
+      navigate(returnUrl);
     } catch (error) {
       console.error(`${provider} login error:`, error);
       // Error is already handled in the auth context
@@ -87,14 +93,17 @@ const LoginPage = () => {
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <motion.div 
-            className="size-16 bg-gradient-to-tr from-habit-purple to-habit-teal rounded-2xl mx-auto"
-            whileHover={{ rotate: 10 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 10 }}
-          />
-          <motion.h2
+            className="flex justify-center"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
+          >
+            <Logo variant="large" showText={false} className="mx-auto" />
+          </motion.div>
+          <motion.h2
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
             className="mt-6 text-3xl font-bold tracking-tight"
           >
             Welcome back

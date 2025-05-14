@@ -17,12 +17,18 @@ import {
   itemAnimation, gradientMovement, slideInRight, slideInLeft, 
   staggerContainer, childStagger, parentStagger
 } from '@/lib/utils';
+import { habitService } from '@/services/habit-service';
 
 const HomePage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [activeSection, setActiveSection] = useState('hero');
   const isMobile = useIsMobile();
+  const [userStats, setUserStats] = useState({
+    totalHabits: 0,
+    completedToday: 0,
+    streak: 0
+  });
   
   // Refs for all sections for intersection observer
   const heroRef = useRef<HTMLDivElement>(null);
@@ -101,18 +107,28 @@ const HomePage = () => {
     }
   }, [mousePosition, isMobile]);
   
+  // Fetch user stats when logged in
   useEffect(() => {
-    if (user) {
-      navigate('/dashboard');
-    }
+    const fetchUserStats = async () => {
+      if (user) {
+        try {
+          const habits = await habitService.getUserHabits();
+          const todayCheckIns = await habitService.getCheckInsForDate(new Date());
+          const completedToday = todayCheckIns.filter(c => c.status === 'completed').length;
+          
+          setUserStats({
+            totalHabits: habits.length,
+            completedToday,
+            streak: 0 // You can implement streak calculation logic here
+          });
+        } catch (error) {
+          console.error('Error fetching user stats:', error);
+        }
+      }
+    };
     
-    // Trigger text reveal animation when hero section is in view
-    if (heroInView) {
-      textIndex.set(1);
-    } else {
-      textIndex.set(0);
-    }
-  }, [user, navigate, heroInView]);
+    fetchUserStats();
+  }, [user]);
   
   // Animation sequence for headline typing effect
   const [headlineScope, animateHeadline] = useAnimate();

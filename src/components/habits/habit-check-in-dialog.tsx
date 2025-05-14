@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { format, isAfter, parseISO } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
@@ -83,7 +82,13 @@ export default function HabitCheckInDialog({
       });
       
       toast.success(`Habit marked as ${status} for ${format(selectedDate, 'MMM d, yyyy')}`);
-      onUpdate();
+      
+      // Call onUpdate to refresh data
+      if (onUpdate) {
+        onUpdate();
+      }
+      
+      // Close the dialog
       onOpenChange(false);
     } catch (error) {
       console.error('Error updating check-in:', error);
