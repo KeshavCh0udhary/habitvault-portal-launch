@@ -1,7 +1,6 @@
-
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, useScroll, useTransform, useInView, useMotionValueEvent, useSpring, useMotionValue, useAnimate } from 'framer-motion';
+import { motion, useScroll, useTransform, useInView, useMotionValueEvent, useSpring, useMotionValue, useAnimate, AnimationSequence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/auth-context';
 import { EnhancedCursorGradient } from '@/components/enhanced-cursor-gradient';
@@ -121,7 +120,7 @@ const HomePage = () => {
   
   useEffect(() => {
     if (heroInView) {
-      const sequence = [
+      const sequence: AnimationSequence = [
         [headlineScope.current, { opacity: 1 }, { duration: 0.3 }],
         [
           headlineScope.current,
