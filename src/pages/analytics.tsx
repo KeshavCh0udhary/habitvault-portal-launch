@@ -378,16 +378,33 @@ export default function AnalyticsPage() {
   
   // Calculate check-in distribution
   const statusDistribution = React.useMemo(() => {
-    const completed = dailyCheckIns.filter(c => c.completed > 0).length;
-    const missed = dailyCheckIns.filter(c => c.missed > 0).length;
-    const skipped = dailyCheckIns.filter(c => c.completed === 0 && c.missed === 0).length;
+    // Only count check-ins within the selected date range
+    const filteredCheckIns = checkIns.filter(checkIn => {
+      const checkInDate = parseISO(checkIn.date);
+      return isWithinInterval(checkInDate, { 
+        start: dateRange.start, 
+        end: dateRange.end 
+      });
+    });
+
+    const completed = filteredCheckIns.filter(c => c.status === 'completed').length;
+    const missed = filteredCheckIns.filter(c => c.status === 'missed').length;
     
-    return [
+    // Only include skipped if we have actual skipped check-ins
+    const skipped = filteredCheckIns.filter(c => c.status === 'skipped').length;
+    
+    const data = [
       { name: 'Completed', value: completed },
       { name: 'Missed', value: missed },
-      { name: 'Skipped', value: skipped },
-    ].filter(item => item.value > 0); // Remove zero values
-  }, [dailyCheckIns, lastUpdate]);
+    ];
+    
+    // Only add skipped to the distribution if there are actual skipped check-ins
+    if (skipped > 0) {
+      data.push({ name: 'Skipped', value: skipped });
+    }
+    
+    return data.filter(item => item.value > 0); // Remove zero values
+  }, [checkIns, dateRange.start, dateRange.end, lastUpdate]);
   
   // Get data for habit completion by name
   const habitCompletionData = React.useMemo(() => {
