@@ -120,18 +120,20 @@ const HomePage = () => {
   
   useEffect(() => {
     if (heroInView) {
-      const sequence = [
-        [headlineScope.current, { opacity: 1 }, { duration: 0.3 }],
-        [headlineScope.current, 
-          { 
-            "--content": `"${headlineText}"`,
-            "--width": "100%" 
-          }, 
-          { duration: 2, ease: "easeOut" }
-        ]
-      ];
+      animateHeadline(
+        headlineScope.current, 
+        { opacity: 1 }, 
+        { duration: 0.3 }
+      );
       
-      animateHeadline(sequence);
+      animateHeadline(
+        headlineScope.current,
+        { 
+          "--content": `"${headlineText}"`,
+          "--width": "100%" 
+        } as any, 
+        { duration: 2, ease: "easeOut" }
+      );
     }
   }, [heroInView, animateHeadline]);
   
@@ -246,25 +248,12 @@ const HomePage = () => {
                 {/* Animated Headline with typing effect */}
                 <motion.h1 
                   ref={headlineScope}
-                  className="text-5xl md:text-7xl font-bold leading-tight tracking-tight mb-4 relative"
+                  className="text-5xl md:text-7xl font-bold leading-tight tracking-tight mb-4 relative after:content-[var(--content)] after:absolute after:left-0 after:top-0 after:w-[var(--width)] after:whitespace-nowrap after:overflow-hidden after:border-r-[3px] after:border-solid after:animate-[blink_0.75s_step-end_infinite]"
                   initial={{ opacity: 0 }}
                   style={{
                     "--content": `""`,
                     "--width": "0%"
                   } as any}
-                  css={{
-                    "&::after": {
-                      content: "var(--content)",
-                      position: "absolute",
-                      left: 0,
-                      top: 0,
-                      width: "var(--width)",
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      borderRight: "3px solid",
-                      animation: "blink 0.75s step-end infinite",
-                    }
-                  }}
                 >
                   <span className="text-gradient inline-block">Build Habits That Stick.</span>
                 </motion.h1>
